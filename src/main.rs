@@ -9,7 +9,8 @@ fn main() {
 
     loop {
         let mut input_buffer: String = String::new();
-        print!("");
+        print!(">> ");
+        io::stdout().flush().unwrap();
         stdin.read_line(&mut input_buffer).unwrap();
         let mut tokens: Vec<token::Token> = Vec::new();
         if let Err(errmsg) = token::scan_from_line(&input_buffer, &mut tokens) {
@@ -18,7 +19,6 @@ fn main() {
             dbg!("{}", tokens);
         };
 
-        io::stdout().flush().unwrap();
         break;  // for test
     }
 
