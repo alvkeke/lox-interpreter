@@ -61,45 +61,42 @@ fn scan_from_snap(snap: &String) -> Result<Vec<Token>, String> {
 }
 
 
-enum ParseState {
-    Normal,
-    String,
+enum ParseType {
+    Identifier,
     Number,
+}
+
+fn find_to_close(close_ch: char, str: &mut impl Iterator<Item = char>, out_buf: &mut String) -> Result<i32, String> {
+    while let Some(ch) = str.next() {
+        if ch == close_ch {
+            return Ok(0);
+        }
+        out_buf.push(ch);
+    }
+
+    return Err(format!("end without close mark: {}", close_ch));
 }
 
 pub fn scan_from_line(line: &String, list: &mut Vec<Token>) -> Result<i32, String> {
 
-    let mut parse_state = ParseState::Normal;
+    let mut parse_type = ParseType::Identifier;
     let mut string_buffer: String = String::new();
-    let mut ch_peekable = line.chars().peekable();
+    let mut line_itr = line.chars().peekable();
 
     let buf = &mut string_buffer;
 
-    while let Some(ch) = ch_peekable.next() {
+    while let Some(ch) = line_itr.next() {
 
-        if let ParseState::String = parse_state {
-            if ch == '"' {
-                list.push(Token::String(buf.clone()));
-                buf.clear();
-                parse_state = ParseState::Normal;
-            } else {
-                buf.push(ch);
-            }
-            continue;
-        }
-
-        // parse_state != ParseState::String if reach here
         if matches!(ch, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_') {
             match ch {
                 '0'..='9' => {
-                    if buf.is_empty() && matches!(parse_state, ParseState::Normal) {
-                        // label_type = LabelType::Number;
-                        parse_state = ParseState::Number;
+                    if buf.is_empty() && matches!(parse_type, ParseType::Identifier) {
+                        parse_type = ParseType::Number;
                     }
                     buf.push(ch);
                 },
                 _ => {
-                    if let ParseState::Number = parse_state {
+                    if let ParseType::Number = parse_type {
                         return Err(String::from("got unexpected char during parsing the number"));
                     }
                     buf.push(ch);
@@ -110,18 +107,45 @@ pub fn scan_from_line(line: &String, list: &mut Vec<Token>) -> Result<i32, Strin
 
         if !buf.is_empty() {
             let label_new = buf.clone();
-            list.push(match parse_state {
-                ParseState::Number => Token::Number(label_new),
-                ParseState::Normal => Token::Identifier(label_new),
-                ParseState::String => panic!("should not reach here, consider about the memory corruption"),
+            list.push(match parse_type {
+                ParseType::Number => Token::Number(label_new),
+                ParseType::Identifier => {
+                    // check keywords before treat it as an identifier
+                    match label_new.as_str() {
+                        "and" => Token::And,
+                        "class" => Token::Class,
+                        "else" => Token::Else,
+                        "false" => Token::False,
+                        "for" => Token::For,
+                        "fun" => Token::Fun,
+                        "if" => Token::If,
+                        "nil" => Token::Nil,
+                        "or" => Token::Or,
+                        "print" => Token::Print,
+                        "return" => Token::Return,
+                        "super" => Token::Super,
+                        "this" => Token::This,
+                        "true" => Token::True,
+                        "var" => Token::Var,
+                        "while" => Token::While,
+                        _ => Token::Identifier(label_new),
+                    }
+                },
             });
-            parse_state = ParseState::Normal;
+            parse_type = ParseType::Identifier;
             buf.clear();
         }
 
-        let peeked = ch_peekable.peek();
+        let peeked = line_itr.peek();
         match (ch, peeked) {
-            ('"', _) => parse_state = ParseState::String,
+            // None is not avaiable
+            ('"', Some(_)) => {
+                if let Err(msg) = find_to_close(ch, &mut line_itr, buf) {
+                    return Err(msg);
+                }
+                list.push(Token::String(buf.clone()));
+                buf.clear();
+            },
             ('(', _) => list.push(Token::LeftParen),
             (')', _) => list.push(Token::RightParen),
             ('{', _) => list.push(Token::LeftBrace),
@@ -139,7 +163,7 @@ pub fn scan_from_line(line: &String, list: &mut Vec<Token>) -> Result<i32, Strin
                     '>' => list.push(Token::GreaterEqual),
                     _ => panic!("should not got wrong char here"),
                 }
-                ch_peekable.next();
+                line_itr.next();
             },
 
             ('+', _) => list.push(Token::Plus),
