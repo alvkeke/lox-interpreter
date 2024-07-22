@@ -171,15 +171,16 @@ pub fn scan_from_line(line: &String, list: &mut Vec<Token>) -> Result<i32, Strin
             ('.', _) => list.push(Token::Dot),
             (';', _) => list.push(Token::Semicolon),
 
-            ('!' | '=' | '<' | '>', Some('=')) => {
+            (ch, Some('=')) => {
+                let mut used = true;
                 match ch {
                     '!' => list.push(Token::BangEqual),
                     '=' => list.push(Token::EqualEqual),
                     '<' => list.push(Token::LessEqual),
                     '>' => list.push(Token::GreaterEqual),
-                    _ => panic!("should not got wrong char here"),
+                    _ => used = false,
                 }
-                line_itr.next();
+                if used { line_itr.next(); }
             },
 
             ('+', _) => list.push(Token::Plus),
