@@ -3,6 +3,8 @@ use std::{self, io::{self, Write}};
 
 mod token;
 mod types;
+mod syntax_v_struct;
+mod syntax_v_enum;
 
 fn main() {
     let stdin = io::stdin();
