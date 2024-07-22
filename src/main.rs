@@ -2,6 +2,7 @@
 use std::{self, io::{self, Write}};
 
 mod token;
+mod types;
 
 fn main() {
     let stdin = io::stdin();

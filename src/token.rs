@@ -1,4 +1,6 @@
-use core::panic;
+use core::{num, panic};
+
+use crate::types::Number;
 
 #[derive(Debug)]
 pub enum Token {
@@ -27,7 +29,7 @@ pub enum Token {
     // Literals.
     Identifier(String),
     String(String),
-    Number(String),
+    Number(Number),
 
     // Keywords.
     And,
@@ -87,6 +89,12 @@ pub fn scan_from_line(line: &String, list: &mut Vec<Token>) -> Result<i32, Strin
 
     while let Some(ch) = line_itr.next() {
 
+        // FIXME: demical cannot be parsed now
+        if matches!(parse_type, ParseType::Number) && ch == '.' {
+            buf.push(ch);
+            continue;
+        }
+
         if matches!(ch, 'a'..='z' | 'A'..='Z' | '0'..='9' | '_') {
             match ch {
                 '0'..='9' => {
@@ -108,7 +116,15 @@ pub fn scan_from_line(line: &String, list: &mut Vec<Token>) -> Result<i32, Strin
         if !buf.is_empty() {
             let label_new = buf.clone();
             list.push(match parse_type {
-                ParseType::Number => Token::Number(label_new),
+                ParseType::Number => {
+                    if label_new.ends_with('.') {
+                        return Err(format!("wrong number string get: {}", label_new));
+                    }
+                    match Number::from(label_new.as_str()) {
+                        Ok(num) => Token::Number(num),
+                        Err(ex) => return Err(ex),
+                    }
+                },
                 ParseType::Identifier => {
                     // check keywords before treat it as an identifier
                     match label_new.as_str() {
