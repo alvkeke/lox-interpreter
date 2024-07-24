@@ -1,5 +1,5 @@
 
-use std::{cmp::Ordering, ops::Add};
+use std::fmt::Display;
 
 use super::number::Number;
 
@@ -16,6 +16,17 @@ pub enum ObjectContent {
     Boolean(bool),
     Number(Number),
     String(String),
+}
+
+impl Display for ObjectContent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Nil => write!(f, "(Nil)"),
+            Self::Boolean(b) => write!(f, "{}", b),
+            Self::Number(num) => write!(f, "{}", num),
+            Self::String(str) => write!(f, "{}", str),
+        }
+    }
 }
 
 // Instance and data operate methods 
@@ -91,7 +102,13 @@ impl Object {
             },
             (String(arg1), String(arg2)) => {
                 Ok(Object::newString(format!("{}{}", arg1, arg2)))
-            }
+            },
+            (Number(arg1), String(arg2)) => {
+                Ok(Object::newString(format!("{}{}", arg1, arg2)))
+            },
+            (String(arg1), Number(arg2)) => {
+                Ok(Object::newString(format!("{}{}", arg1, arg2)))
+            },
             _ => Err(format!("object type not allowed {:?} == {:?}", self, rhs)),
         }
     }

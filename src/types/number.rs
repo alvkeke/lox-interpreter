@@ -5,7 +5,7 @@ pub enum Number {
     Decimal(f64),
 }
 
-use std::{cmp::Ordering, ops::{self, Neg}};
+use std::{cmp::Ordering, fmt::Display, ops::{self, Neg}};
 
 use Number::{*};
 
@@ -21,6 +21,15 @@ impl Number {
                 Err(ex) => Err(ex.to_string()),
                 Ok(d) => Ok(Number::Integer(d)),
             }
+        }
+    }
+}
+
+impl Display for Number {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Integer(ii) => write!(f, "{}", ii),
+            Decimal(ii) => write!(f, "{}", ii),
         }
     }
 }
