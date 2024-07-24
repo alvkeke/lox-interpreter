@@ -1,5 +1,5 @@
 
-use crate::types::Number;
+use crate::types::number::Number;
 
 #[derive(Debug)]
 pub enum Token {

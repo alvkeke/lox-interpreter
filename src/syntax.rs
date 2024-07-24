@@ -1,7 +1,7 @@
-use crate::{token::Token, types::Number};
+use crate::{token::Token, types::object::Object};
 
 
-
+#[derive(Debug)]
 pub enum Expr {
     Binary(Box<Expr>, Token, Box<Expr>),
     Group (Box<Expr>),
@@ -10,6 +10,49 @@ pub enum Expr {
     None
 }
 
+
+impl Expr {
+    fn visit(self) -> Result<Object, String> {
+        use Expr::*;
+        use Token::{*};
+        match self {
+            // simple values
+            Literal(Nil) => Ok(Object::new()),
+            Literal(False) => Ok(Object::newBool(false)),
+            Literal(True) => Ok(Object::newBool(true)),
+            Literal(String(str)) => Ok(Object::newString(str)),
+            Literal(Number(num)) => Ok(Object::newNumber(num)),
+            // Unary expr
+            Unary(Bang, expr) => expr.evaluate()?.not(),
+            Unary(Minus, expr) => expr.evaluate()?.neg(),
+            // Group expr
+            Group(expr) => expr.evaluate(),
+            // Binary
+            Binary(left, Slash, right) => left.evaluate()?.div(right.evaluate()?),
+            Binary(left, Star, right) => left.evaluate()?.mul(right.evaluate()?),
+            Binary(left, Minus, right) => left.evaluate()?.sub(right.evaluate()?),
+            Binary(left, Plus, right) => left.evaluate()?.add(right.evaluate()?),
+            Binary(left, Greater, right) => left.evaluate()?.gt(&right.evaluate()?),
+            Binary(left, GreaterEqual, right) => left.evaluate()?.ge(&right.evaluate()?),
+            Binary(left, Less, right) => left.evaluate()?.lt(&right.evaluate()?),
+            Binary(left, LessEqual, right) => left.evaluate()?.le(&right.evaluate()?),
+            Binary(left, EqualEqual, right) => left.evaluate()?.eq(&right.evaluate()?),
+            Binary(left, BangEqual, right) => left.evaluate()?.ne(&right.evaluate()?),
+            None => {
+                panic!("should not reach Expr::None")
+            },
+            left => {
+                Err(format!("NOT CHECKED TYPE: {:?}", left))
+            },
+        }
+    }
+
+    fn evaluate(&self) -> Result<Object, String> {
+        todo!()
+    }
+}
+
+// parsing methods
 impl Expr {
     fn expression(tks: &Vec<Token>, start: usize) -> (Self, usize) {
         Self::equality(tks, start)

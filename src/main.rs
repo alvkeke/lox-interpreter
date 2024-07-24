@@ -2,8 +2,11 @@
 use std::{self, io::{self, Write}};
 
 mod token;
-mod types;
 mod syntax;
+mod types {
+    pub mod object;
+    pub mod number;
+}
 
 fn main() {
     let stdin = io::stdin();
