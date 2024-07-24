@@ -51,6 +51,55 @@ pub enum Token {
     EOF
 }
 
+impl Clone for Token {
+    fn clone(&self) -> Self {
+        match self {
+            Self::LeftParen => Self::LeftParen,
+            Self::RightParen => Self::RightParen,
+            Self::LeftBrace => Self::LeftBrace,
+            Self::RightBrace => Self::RightBrace,
+            Self::Comma => Self::Comma,
+            Self::Dot => Self::Dot,
+            Self::Semicolon => Self::Semicolon,
+            Self::Minus => Self::Minus,
+            Self::Plus => Self::Plus,
+            Self::Slash => Self::Slash,
+            Self::Star => Self::Star,
+            Self::Bang => Self::Bang,
+            Self::BangEqual => Self::BangEqual,
+            Self::Equal => Self::Equal,
+            Self::EqualEqual => Self::EqualEqual,
+            Self::Greater => Self::Greater,
+            Self::GreaterEqual => Self::GreaterEqual,
+            Self::Less => Self::Less,
+            Self::LessEqual => Self::LessEqual,
+            Self::Identifier(arg0) => Self::Identifier(arg0.clone()),
+            Self::String(arg0) => Self::String(arg0.clone()),
+            Self::Number(arg0) => Self::Number(arg0.clone()),
+            Self::And => Self::And,
+            Self::Class => Self::Class,
+            Self::Else => Self::Else,
+            Self::False => Self::False,
+            Self::Fun => Self::Fun,
+            Self::For => Self::For,
+            Self::If => Self::If,
+            Self::Nil => Self::Nil,
+            Self::Or => Self::Or,
+            Self::Print => Self::Print,
+            Self::Return => Self::Return,
+            Self::Super => Self::Super,
+            Self::This => Self::This,
+            Self::True => Self::True,
+            Self::Var => Self::Var,
+            Self::While => Self::While,
+            Self::EOF => Self::EOF,
+        }
+    }
+    
+    fn clone_from(&mut self, source: &Self) {
+        *self = source.clone()
+    }
+}
 
 fn scan_from_snap(snap: &String) -> Result<Vec<Token>, String> {
     let mut result: Vec<Token> = Vec::new();

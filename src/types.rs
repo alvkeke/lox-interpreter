@@ -24,6 +24,15 @@ impl Number {
     }
 }
 
+impl Clone for Number {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Integer(arg0) => Self::Integer(arg0.clone()),
+            Self::Decimal(arg0) => Self::Decimal(arg0.clone()),
+        }
+    }
+}
+
 impl ops::Add<Number> for Number {
     type Output = Number;
     fn add(self, rhs: Number) -> Self::Output {
