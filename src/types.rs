@@ -4,16 +4,9 @@ pub enum Number {
     Integer(i64),
     Decimal(f64),
 }
+use std::ops;
+
 use Number::{*};
-
-enum NumberOperation {
-    Add,
-    Sub,
-    Mul,
-    Div,
-}
-use NumberOperation::{*};
-
 
 impl Number {
     pub fn from(str: &str) -> Result<Number, String> {
@@ -29,63 +22,84 @@ impl Number {
             }
         }
     }
-
-    fn operate(&self, target: &Number, op: NumberOperation) -> Result<Number, &str>{
-        match (self, target) {
-            (Integer(ii), Integer(jj)) => {
-                Ok(match op {
-                    Add => Integer(ii + jj),
-                    Sub => Integer(ii - jj),
-                    Mul => Integer(ii * jj),
-                    Div => Integer(ii / jj),
-                })
-            },
-            (Decimal(ii), Decimal(jj)) => {
-                Ok(match op {
-                    Add => Decimal(ii + jj),
-                    Sub => Decimal(ii - jj),
-                    Mul => Decimal(ii * jj),
-                    Div => Decimal(ii / jj),
-                })
-            },
-            (Integer(ii), Decimal(jj)) => {
-                let fii = *ii as f64;
-                Ok(match op {
-                    Add => Decimal(fii + jj),
-                    Sub => Decimal(fii - jj),
-                    Mul => Decimal(fii * jj),
-                    Div => Decimal(fii / jj),
-                })
-            },
-            (Decimal(ii), Integer(jj)) => {
-                let fjj = *jj as f64;
-                Ok(match op {
-                    Add => Decimal(ii + fjj),
-                    Sub => Decimal(ii - fjj),
-                    Mul => Decimal(ii * fjj),
-                    Div => Decimal(ii / fjj),
-                })
-            },
-            _ => {Err("unsupported operation")},
-        }
-    }
-
-    pub fn add(&self, target: &Number) -> Result<Number, &str>{
-        self.operate(target, NumberOperation::Add)
-    }
-    pub fn sub(&self, target: &Number) -> Result<Number, &str>{
-        self.operate(target, NumberOperation::Sub)
-    }
-    pub fn mul(&self, target: &Number) -> Result<Number, &str>{
-        self.operate(target, NumberOperation::Mul)
-    }
-    pub fn div(&self, target: &Number) -> Result<Number, &str>{
-        self.operate(target, NumberOperation::Div)
-    }
-
 }
 
+impl ops::Add<Number> for Number {
+    type Output = Number;
+    fn add(self, rhs: Number) -> Self::Output {
+        match (self, rhs) {
+            (Integer(ii), Integer(jj)) => {
+                Integer(ii + jj)
+            },
+            (Decimal(ii), Decimal(jj)) => {
+                Decimal(ii + jj)
+            },
+            (Integer(ii), Decimal(jj)) => {
+                Decimal(ii as f64 + jj)
+            },
+            (Decimal(ii), Integer(jj)) => {
+                Decimal(ii + jj as f64)
+            }
+        }
+    }
+}
 
+impl ops::Sub<Number> for Number {
+    type Output = Number;
+    fn sub(self, rhs: Number) -> Self::Output {
+        match (self, rhs) {
+            (Integer(ii), Integer(jj)) => {
+                Integer(ii - jj)
+            },
+            (Decimal(ii), Decimal(jj)) => {
+                Decimal(ii - jj)
+            },
+            (Integer(ii), Decimal(jj)) => {
+                Decimal(ii as f64 - jj)
+            },
+            (Decimal(ii), Integer(jj)) => {
+                Decimal(ii - jj as f64)
+            }
+        }
+    }
+}
 
+impl ops::Mul<Number> for Number {
+    type Output = Number;
+    fn mul(self, rhs: Number) -> Self::Output {
+        match (self, rhs) {
+            (Integer(ii), Integer(jj)) => {
+                Integer(ii * jj)
+            },
+            (Decimal(ii), Decimal(jj)) => {
+                Decimal(ii * jj)
+            },
+            (Integer(ii), Decimal(jj)) => {
+                Decimal(ii as f64 * jj)
+            },
+            (Decimal(ii), Integer(jj)) => {
+                Decimal(ii * jj as f64)
+            }
+        }
+    }
+}
 
-
+impl ops::Div<Number> for Number {
+    type Output = Number;
+    fn div(self, rhs: Number) -> Self::Output {
+        match (self, rhs) {
+            (Integer(ii), Integer(jj)) => {
+                Integer(ii / jj)
+            },
+            (Decimal(ii), Decimal(jj)) => {
+                Decimal(ii / jj)
+            },
+            (Integer(ii), Decimal(jj)) => {
+                Decimal(ii as f64 / jj)
+            },
+            (Decimal(ii), Integer(jj)) => {
+                Decimal(ii / jj as f64)
+            }
+        }
+    }
+}
