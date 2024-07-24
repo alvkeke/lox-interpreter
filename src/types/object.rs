@@ -68,8 +68,10 @@ impl Object {
 // 
 impl Object {
     pub fn not(self) -> Result<Object, String> {
+        use ObjectContent::{Boolean, Nil};
         match self.content {
-            ObjectContent::Boolean(bool) => Ok(Object::newBool(!bool)),
+            Boolean(bool) => Ok(Object::newBool(!bool)),
+            Nil => Ok(Object::newBool(true)),   // treat Nil as `false`
             _ => Err(format!("not supported operation `Not(!)' on {:?}", self))
         }
     }
@@ -136,8 +138,9 @@ impl Object {
             },
             (String(arg1), String(arg2)) => {
                 Ok(Object::newBool(arg1 == arg2))
-            }
-            _ => Err(format!("object type mismatch {:?} == {:?}", self, other)),
+            },
+            // false if type mismatch
+            _ => Ok(Object::newBool(false)),
         }
     }
     
