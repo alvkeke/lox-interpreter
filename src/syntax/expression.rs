@@ -3,6 +3,7 @@ use crate::{syntax::token::Token, types::object::Object, vm::LoxVM};
 
 #[derive(Debug)]
 pub enum Expr {
+    Assign(Token, Box<Expr>),
     Binary(Box<Expr>, Token, Box<Expr>),
     Group (Box<Expr>),
     Literal (Token),
@@ -44,6 +45,18 @@ impl Expr {
             Binary(left, LessEqual, right) => left.evaluate(vm)?.le(&right.evaluate(vm)?),
             Binary(left, EqualEqual, right) => left.evaluate(vm)?.eq(&right.evaluate(vm)?),
             Binary(left, BangEqual, right) => left.evaluate(vm)?.ne(&right.evaluate(vm)?),
+            Assign(Identifier(idnt_name), expr) => {
+                let value = expr.evaluate(vm)?;
+                match vm.var_get(idnt_name) {
+                    Some(_) => {
+                        let mut obj = value.clone();
+                        obj.set_name(idnt_name.clone());
+                        vm.var_add(obj);
+                        Ok(value)
+                    },
+                    _ => Err(format!("cannot find object named: {}", idnt_name)),
+                }
+            },
             left => {
                 Err(format!("NOT CHECKED TYPE: {:#?}", left))
             },
@@ -55,7 +68,41 @@ impl Expr {
 // parsing methods
 impl Expr {
     pub fn expression(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
-        Self::equality(tks, start)
+        if let Ok(ret) = Self::assign(tks, start) {
+            Ok(ret)
+        } else {
+            Self::equality(tks, start)
+        }
+    }
+
+    pub fn assign(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+        let mut ret_adv = 0;
+        let idt = tks.get(start+ret_adv);
+        if !matches!(idt, Some(Token::Identifier(_))) {
+            return Err(format!("Not start with Identifier"));
+        }
+        let idt = idt.unwrap();
+        ret_adv+=1;
+        if !matches!(tks.get(start+ ret_adv), Some(Token::Equal)) {
+            return Err(format!("missing token : Equal"));
+        }
+        ret_adv+=1;
+
+        match Self::assign(tks, start + ret_adv) {
+            Ok((expr, used)) => {
+                ret_adv += used;
+                Ok((Expr::Assign(idt.clone(), Box::new(expr)), ret_adv))
+            },
+            Err(_) => {
+                match Self::equality(tks, start+ret_adv) {
+                    Ok((expr, used)) => {
+                        ret_adv += used;
+                        Ok((Expr::Assign(idt.clone(), Box::new(expr)), ret_adv))
+                    },
+                    Err(msg) => Err(msg),
+                }
+            }
+        }
     }
 
     pub fn equality(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
