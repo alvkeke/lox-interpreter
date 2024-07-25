@@ -12,7 +12,12 @@ pub enum Expr {
 
 
 impl Expr {
+
     fn visit(self) -> Result<Object, String> {
+        self.evaluate()
+    }
+
+    fn evaluate(&self) -> Result<Object, String> {
         use Expr::*;
         use Token::{*};
         match self {
@@ -20,18 +25,18 @@ impl Expr {
             Literal(Nil) => Ok(Object::new()),
             Literal(False) => Ok(Object::newBool(false)),
             Literal(True) => Ok(Object::newBool(true)),
-            Literal(String(str)) => Ok(Object::newString(str)),
-            Literal(Number(num)) => Ok(Object::newNumber(num)),
+            Literal(String(str)) => Ok(Object::newString(str.clone())),
+            Literal(Number(num)) => Ok(Object::newNumber(num.clone())),
             // Unary expr
             Unary(Bang, expr) => expr.evaluate()?.not(),
             Unary(Minus, expr) => expr.evaluate()?.neg(),
             // Group expr
             Group(expr) => expr.evaluate(),
             // Binary
-            Binary(left, Slash, right) => left.evaluate()?.div(right.evaluate()?),
-            Binary(left, Star, right) => left.evaluate()?.mul(right.evaluate()?),
-            Binary(left, Minus, right) => left.evaluate()?.sub(right.evaluate()?),
-            Binary(left, Plus, right) => left.evaluate()?.add(right.evaluate()?),
+            Binary(left, Slash, right) => left.evaluate()?.div(&right.evaluate()?),
+            Binary(left, Star, right) => left.evaluate()?.mul(&right.evaluate()?),
+            Binary(left, Minus, right) => left.evaluate()?.sub(&right.evaluate()?),
+            Binary(left, Plus, right) => left.evaluate()?.add(&right.evaluate()?),
             Binary(left, Greater, right) => left.evaluate()?.gt(&right.evaluate()?),
             Binary(left, GreaterEqual, right) => left.evaluate()?.ge(&right.evaluate()?),
             Binary(left, Less, right) => left.evaluate()?.lt(&right.evaluate()?),
@@ -47,9 +52,6 @@ impl Expr {
         }
     }
 
-    fn evaluate(&self) -> Result<Object, String> {
-        todo!()
-    }
 }
 
 // parsing methods

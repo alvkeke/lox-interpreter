@@ -78,7 +78,7 @@ impl Object {
 
 // 
 impl Object {
-    pub fn not(self) -> Result<Object, String> {
+    pub fn not(&self) -> Result<Object, String> {
         use ObjectContent::{Boolean, Nil};
         match self.content {
             Boolean(bool) => Ok(Object::newBool(!bool)),
@@ -87,18 +87,18 @@ impl Object {
         }
     }
 
-    pub fn neg(self) -> Result<Object, String> {
-        match self.content {
-            ObjectContent::Number(num) => Ok(Object::newNumber(-num)),
+    pub fn neg(&self) -> Result<Object, String> {
+        match &self.content {
+            ObjectContent::Number(num) => Ok(Object::newNumber(-num.clone())),
             _ => Err(format!("not supported operation `Not(!)' on {:?}", self))
         }
     }
 
-    pub fn add(self, rhs: Self) -> Result<Object, String> {
+    pub fn add(&self, rhs: &Self) -> Result<Object, String> {
         use ObjectContent::*;
         match (&self.content, &rhs.content) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newNumber(arg1.add_ref(arg2)))
+                Ok(Object::newNumber(arg1.add_ref(&arg2)))
             },
             (String(arg1), String(arg2)) => {
                 Ok(Object::newString(format!("{}{}", arg1, arg2)))
@@ -113,7 +113,7 @@ impl Object {
         }
     }
 
-    pub fn sub(self, rhs: Self) -> Result<Object, String> {
+    pub fn sub(&self, rhs: &Self) -> Result<Object, String> {
         use ObjectContent::*;
         match (&self.content, &rhs.content) {
             (Number(arg1), Number(arg2)) => {
@@ -123,7 +123,7 @@ impl Object {
         }
     }
 
-    pub fn mul(self, rhs: Self) -> Result<Object, String> {
+    pub fn mul(&self, rhs: &Self) -> Result<Object, String> {
         use ObjectContent::*;
         match (&self.content, &rhs.content) {
             (Number(arg1), Number(arg2)) => {
@@ -133,7 +133,7 @@ impl Object {
         }
     }
 
-    pub fn div(self, rhs: Self) -> Result<Object, String> {
+    pub fn div(&self, rhs: &Self) -> Result<Object, String> {
         use ObjectContent::*;
         match (&self.content, &rhs.content) {
             (Number(arg1), Number(arg2)) => {
