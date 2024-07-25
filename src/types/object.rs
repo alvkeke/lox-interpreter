@@ -98,7 +98,7 @@ impl Object {
         use ObjectContent::*;
         match (&self.content, &rhs.content) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newNumber(arg1.add_ref(&arg2)))
+                Ok(Object::newNumber(arg1.add_ref(&arg2)?))
             },
             (String(arg1), String(arg2)) => {
                 Ok(Object::newString(format!("{}{}", arg1, arg2)))
@@ -117,7 +117,7 @@ impl Object {
         use ObjectContent::*;
         match (&self.content, &rhs.content) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newNumber(arg1.sub_ref(arg2)))
+                Ok(Object::newNumber(arg1.sub_ref(arg2)?))
             },
             _ => Err(format!("object type not allowed {:?} == {:?}", self, rhs)),
         }
@@ -127,7 +127,7 @@ impl Object {
         use ObjectContent::*;
         match (&self.content, &rhs.content) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newNumber(arg1.mul_ref(arg2)))
+                Ok(Object::newNumber(arg1.mul_ref(arg2)?))
             },
             _ => Err(format!("object type not allowed {:?} == {:?}", self, rhs)),
         }
@@ -137,7 +137,7 @@ impl Object {
         use ObjectContent::*;
         match (&self.content, &rhs.content) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newNumber(arg1.div_ref(arg2)))
+                Ok(Object::newNumber(arg1.div_ref(arg2)?))
             },
             _ => Err(format!("object type not allowed {:?} == {:?}", self, rhs)),
         }

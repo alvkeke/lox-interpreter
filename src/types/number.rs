@@ -55,149 +55,109 @@ impl Neg for Number {
 }
 
 impl ops::Add<Number> for Number {
-    type Output = Number;
+    type Output = Result<Number, String>;
     fn add(self, rhs: Number) -> Self::Output {
-        match (self, rhs) {
-            (Integer(ii), Integer(jj)) => {
-                Integer(ii + jj)
-            },
-            (Decimal(ii), Decimal(jj)) => {
-                Decimal(ii + jj)
-            },
-            (Integer(ii), Decimal(jj)) => {
-                Decimal(ii as f64 + jj)
-            },
-            (Decimal(ii), Integer(jj)) => {
-                Decimal(ii + jj as f64)
-            }
-        }
+        self.add_ref(&rhs)
     }
 }
 
 impl ops::Sub<Number> for Number {
-    type Output = Number;
+    type Output = Result<Number, String>;
     fn sub(self, rhs: Number) -> Self::Output {
-        match (self, rhs) {
-            (Integer(ii), Integer(jj)) => {
-                Integer(ii - jj)
-            },
-            (Decimal(ii), Decimal(jj)) => {
-                Decimal(ii - jj)
-            },
-            (Integer(ii), Decimal(jj)) => {
-                Decimal(ii as f64 - jj)
-            },
-            (Decimal(ii), Integer(jj)) => {
-                Decimal(ii - jj as f64)
-            }
-        }
+        self.sub_ref(&rhs)
     }
 }
 
 impl ops::Mul<Number> for Number {
-    type Output = Number;
+    type Output = Result<Number, String>;
     fn mul(self, rhs: Number) -> Self::Output {
-        match (self, rhs) {
-            (Integer(ii), Integer(jj)) => {
-                Integer(ii * jj)
-            },
-            (Decimal(ii), Decimal(jj)) => {
-                Decimal(ii * jj)
-            },
-            (Integer(ii), Decimal(jj)) => {
-                Decimal(ii as f64 * jj)
-            },
-            (Decimal(ii), Integer(jj)) => {
-                Decimal(ii * jj as f64)
-            }
-        }
+        self.mul_ref(&rhs)
     }
 }
 
 impl ops::Div<Number> for Number {
-    type Output = Number;
+    type Output = Result<Number, String>;
     fn div(self, rhs: Number) -> Self::Output {
-        match (self, rhs) {
-            (Integer(ii), Integer(jj)) => {
-                Integer(ii / jj)
-            },
-            (Decimal(ii), Decimal(jj)) => {
-                Decimal(ii / jj)
-            },
-            (Integer(ii), Decimal(jj)) => {
-                Decimal(ii as f64 / jj)
-            },
-            (Decimal(ii), Integer(jj)) => {
-                Decimal(ii / jj as f64)
-            }
-        }
+        self.div_ref(&rhs)
     }
 }
 
 impl Number {
-    pub fn add_ref(&self, rhs: &Self) -> Self {
+
+    pub fn is_zero(&self) -> bool {
+        match self {
+            Integer(0) => true,
+            Decimal(0.0) => true,
+            _ => false,
+        }
+    }
+
+    pub fn add_ref(&self, rhs: &Self) -> Result<Number, String> {
         match (self, rhs) {
             (Integer(ii), Integer(jj)) => {
-                Integer(*ii + *jj)
+                Ok(Integer(*ii + *jj))
             },
             (Decimal(ii), Decimal(jj)) => {
-                Decimal(*ii + *jj)
+                Ok(Decimal(*ii + *jj))
             },
             (Integer(ii), Decimal(jj)) => {
-                Decimal(*ii as f64 + *jj)
+                Ok(Decimal(*ii as f64 + *jj))
             },
             (Decimal(ii), Integer(jj)) => {
-                Decimal(*ii + *jj as f64)
+                Ok(Decimal(*ii + *jj as f64))
             }
         }
     }
 
-    pub fn sub_ref(&self, rhs: &Self) -> Self {
+    pub fn sub_ref(&self, rhs: &Self) -> Result<Number, String> {
         match (self, rhs) {
             (Integer(ii), Integer(jj)) => {
-                Integer(*ii - *jj)
+                Ok(Integer(*ii - *jj))
             },
             (Decimal(ii), Decimal(jj)) => {
-                Decimal(*ii - *jj)
+                Ok(Decimal(*ii - *jj))
             },
             (Integer(ii), Decimal(jj)) => {
-                Decimal(*ii as f64 - *jj)
+                Ok(Decimal(*ii as f64 - *jj))
             },
             (Decimal(ii), Integer(jj)) => {
-                Decimal(*ii - *jj as f64)
+                Ok(Decimal(*ii - *jj as f64))
             }
         }
     }
-    pub fn mul_ref(&self, rhs: &Self) -> Self {
+    pub fn mul_ref(&self, rhs: &Self) -> Result<Number, String> {
         match (self, rhs) {
             (Integer(ii), Integer(jj)) => {
-                Integer(*ii * *jj)
+                Ok(Integer(*ii * *jj))
             },
             (Decimal(ii), Decimal(jj)) => {
-                Decimal(*ii * *jj)
+                Ok(Decimal(*ii * *jj))
             },
             (Integer(ii), Decimal(jj)) => {
-                Decimal(*ii as f64 * *jj)
+                Ok(Decimal(*ii as f64 * *jj))
             },
             (Decimal(ii), Integer(jj)) => {
-                Decimal(*ii * *jj as f64)
+                Ok(Decimal(*ii * *jj as f64))
             }
         }
     }
 
-    pub fn div_ref(&self, rhs: &Self) -> Self {
+    pub fn div_ref(&self, rhs: &Self) -> Result<Number, String> {
+        if rhs.is_zero() {
+            return Err(format!("cannot divide by Zero: {} / {}", self, rhs));
+        }
         match (self, rhs) {
             (Integer(ii), Integer(jj)) => {
-                Integer(*ii / *jj)
+                Ok(Integer(*ii / *jj))
             },
             (Decimal(ii), Decimal(jj)) => {
-                Decimal(*ii / *jj)
+                Ok(Decimal(*ii / *jj))
             },
             (Integer(ii), Decimal(jj)) => {
-                Decimal(*ii as f64 / *jj)
+                Ok(Decimal(*ii as f64 / *jj))
             },
             (Decimal(ii), Integer(jj)) => {
-                Decimal(*ii / *jj as f64)
+                Ok(Decimal(*ii / *jj as f64))
             }
         }
     }
