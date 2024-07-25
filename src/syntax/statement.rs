@@ -1,4 +1,4 @@
-use crate::types::object::Object;
+use crate::{types::object::Object, vm::LoxVM};
 
 use super::{expression::Expr, token::Token};
 
@@ -14,22 +14,18 @@ pub enum Stmt{
 
 impl Stmt {
 
-    pub fn visit(self)  -> Result<Option<Object>, String> {
-        self.exec()
-    }
-
-    pub fn exec(&self) -> Result<Option<Object>, String> {
+    pub fn exec(&self, vm: &mut LoxVM) -> Result<Option<Object>, String> {
         match self {
             Stmt::Expr(expr) => {
-                println!("{}", expr.evaluate()?);
+                println!("{}", expr.evaluate(vm)?);
             },
             Stmt::Print(expr) => {
-                print!("{}", expr.evaluate()?);
+                println!("{}", expr.evaluate(vm)?);
             },
             Stmt::Decl(Token::Identifier(idnt_name), expr) => {
                 match expr {
                     Some(expr) => {
-                        let mut obj = expr.evaluate()?;
+                        let mut obj = expr.evaluate(vm)?;
                         obj.set_name(idnt_name.clone());
                         return Ok(Some(obj));
                     },

@@ -1,4 +1,4 @@
-use crate::{syntax::token::Token, types::object::Object};
+use crate::{syntax::token::Token, types::object::Object, vm::LoxVM};
 
 
 #[derive(Debug)]
@@ -12,11 +12,7 @@ pub enum Expr {
 
 impl Expr {
 
-    pub fn visit(self) -> Result<Object, String> {
-        self.evaluate()
-    }
-
-    pub fn evaluate(&self) -> Result<Object, String> {
+    pub fn evaluate(&self, vm: &mut LoxVM) -> Result<Object, String> {
         use Expr::*;
         use Token::{*};
         match self {
@@ -26,23 +22,28 @@ impl Expr {
             Literal(True) => Ok(Object::bool_new(true)),
             Literal(String(str)) => Ok(Object::string_new(str.clone())),
             Literal(Number(num)) => Ok(Object::number_new(num.clone())),
-            Literal(Identifier(idnt_name)) => todo!(),
+            Literal(Identifier(idnt_name)) => {
+                match vm.var_find(idnt_name) {
+                    Some(oo) => Ok(oo.clone()),
+                    None => Err(format!("object {} not found", idnt_name)),
+                }
+            },
             // Unary expr
-            Unary(Bang, expr) => expr.evaluate()?.not(),
-            Unary(Minus, expr) => expr.evaluate()?.neg(),
+            Unary(Bang, expr) => expr.evaluate(vm)?.not(),
+            Unary(Minus, expr) => expr.evaluate(vm)?.neg(),
             // Group expr
-            Group(expr) => expr.evaluate(),
+            Group(expr) => expr.evaluate(vm),
             // Binary
-            Binary(left, Slash, right) => left.evaluate()?.div(&right.evaluate()?),
-            Binary(left, Star, right) => left.evaluate()?.mul(&right.evaluate()?),
-            Binary(left, Minus, right) => left.evaluate()?.sub(&right.evaluate()?),
-            Binary(left, Plus, right) => left.evaluate()?.add(&right.evaluate()?),
-            Binary(left, Greater, right) => left.evaluate()?.gt(&right.evaluate()?),
-            Binary(left, GreaterEqual, right) => left.evaluate()?.ge(&right.evaluate()?),
-            Binary(left, Less, right) => left.evaluate()?.lt(&right.evaluate()?),
-            Binary(left, LessEqual, right) => left.evaluate()?.le(&right.evaluate()?),
-            Binary(left, EqualEqual, right) => left.evaluate()?.eq(&right.evaluate()?),
-            Binary(left, BangEqual, right) => left.evaluate()?.ne(&right.evaluate()?),
+            Binary(left, Slash, right) => left.evaluate(vm)?.div(&right.evaluate(vm)?),
+            Binary(left, Star, right) => left.evaluate(vm)?.mul(&right.evaluate(vm)?),
+            Binary(left, Minus, right) => left.evaluate(vm)?.sub(&right.evaluate(vm)?),
+            Binary(left, Plus, right) => left.evaluate(vm)?.add(&right.evaluate(vm)?),
+            Binary(left, Greater, right) => left.evaluate(vm)?.gt(&right.evaluate(vm)?),
+            Binary(left, GreaterEqual, right) => left.evaluate(vm)?.ge(&right.evaluate(vm)?),
+            Binary(left, Less, right) => left.evaluate(vm)?.lt(&right.evaluate(vm)?),
+            Binary(left, LessEqual, right) => left.evaluate(vm)?.le(&right.evaluate(vm)?),
+            Binary(left, EqualEqual, right) => left.evaluate(vm)?.eq(&right.evaluate(vm)?),
+            Binary(left, BangEqual, right) => left.evaluate(vm)?.ne(&right.evaluate(vm)?),
             left => {
                 Err(format!("NOT CHECKED TYPE: {:#?}", left))
             },

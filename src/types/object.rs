@@ -10,6 +10,12 @@ pub struct Object {
     content: ObjectContent,
 }
 
+
+// const OBJ_NIL: Object = Object {name: None, content: ObjectContent::Nil};
+// const OBJ_TRUE: Object = Object {name: None, content: ObjectContent::Boolean(true)};
+// const OBJ_FALSE: Object = Object {name: None, content: ObjectContent::Boolean(false)};
+
+
 impl Display for Object {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.name {
@@ -19,12 +25,29 @@ impl Display for Object {
     }
 }
 
+impl Clone for Object {
+    fn clone(&self) -> Self {
+        Self { name: self.name.clone(), content: self.content.clone() }
+    }
+}
+
 #[derive(Debug)]
 pub enum ObjectContent {
     Nil,
     Boolean(bool),
     Number(Number),
     String(String),
+}
+
+impl Clone for ObjectContent {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Nil => Self::Nil,
+            Self::Boolean(arg0) => Self::Boolean(arg0.clone()),
+            Self::Number(arg0) => Self::Number(arg0.clone()),
+            Self::String(arg0) => Self::String(arg0.clone()),
+        }
+    }
 }
 
 impl Display for ObjectContent {
@@ -42,6 +65,18 @@ impl Display for ObjectContent {
 impl Object {
     pub fn new() -> Self {
         Object { name: None, content: ObjectContent::Nil }
+    }
+
+    pub fn content_new(content: ObjectContent) -> Self {
+        Object { name: None, content: content }
+    }
+
+    pub fn content_set(&mut self, content: ObjectContent) {
+        self.content = content
+    }
+
+    pub fn content_take(self) -> ObjectContent{
+        self.content
     }
 
     pub fn nil_set(&mut self) {
