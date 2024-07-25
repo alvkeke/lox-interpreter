@@ -1,4 +1,4 @@
-use crate::{token::Token, types::object::Object};
+use crate::{syntax::token::Token, types::object::Object};
 
 
 #[derive(Debug)]
