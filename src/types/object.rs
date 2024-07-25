@@ -72,16 +72,16 @@ impl Object {
         self.content = ObjectContent::String(str);
     }
 
-    // pub fn getName(&self) -> Option<&String> {
-    //     match self.name {
-    //         None => None,
-    //         Some(name) => Some(&name),
-    //     }
-    // }
+    pub fn get_name(&self) -> Option<&String> {
+        match &self.name {
+            None => None,
+            Some(name) => Some(&name),
+        }
+    }
 
-    // pub fn setName(&mut self, name: String) {
-    //     self.name = Some(name);
-    // }
+    pub fn set_name(&mut self, name: String) {
+        self.name = Some(name);
+    }
 
 }
 

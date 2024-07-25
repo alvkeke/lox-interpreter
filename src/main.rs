@@ -2,6 +2,7 @@
 use std::{self, io::{self, Write}};
 
 use syntax::statement::Stmt;
+use types::object::Object;
 
 mod syntax {
     pub mod token;
@@ -15,6 +16,7 @@ mod types {
 
 fn main() {
     let stdin = io::stdin();
+    let mut var_list: Vec<Object> = Vec::new();
 
     loop {
         let mut input_buffer: String = String::new();
@@ -33,6 +35,7 @@ fn main() {
                 Ok((stmt, used)) => {
                     tokens.drain(0..used);
                     match stmt.exec() {
+                        Ok(Some(obj)) => var_list.push(obj),
                         Err(msg) => println!("{}", msg),
                         _ => {},
                     }

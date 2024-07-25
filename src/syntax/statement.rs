@@ -9,17 +9,16 @@ pub enum Stmt{
     Decl(Token, Option<Expr>),
     Expr(Expr),
     Print(Expr),
-    None,
 }
 
 
 impl Stmt {
 
-    pub fn visit(self)  -> Result<(), String> {
+    pub fn visit(self)  -> Result<Option<Object>, String> {
         self.exec()
     }
 
-    pub fn exec(&self) -> Result<(), String> {
+    pub fn exec(&self) -> Result<Option<Object>, String> {
         match self {
             Stmt::Expr(expr) => {
                 println!("{}", expr.evaluate()?);
@@ -28,14 +27,20 @@ impl Stmt {
                 print!("{}", expr.evaluate()?);
             },
             Stmt::Decl(Token::Identifier(idnt_name), expr) => {
-                println!("TODO::: decleared var: {} = {:#?}", idnt_name, expr);
-                // todo!()
+                match expr {
+                    Some(expr) => {
+                        let mut obj = expr.evaluate()?;
+                        obj.set_name(idnt_name.clone());
+                        return Ok(Some(obj));
+                    },
+                    _ => {},
+                }
             },
             _ => {
                 return Err(format!("Unexpected statement"));
             },
         }
-        Ok(())
+        Ok(None)
     }
 
 }
