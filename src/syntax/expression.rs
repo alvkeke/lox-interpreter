@@ -61,8 +61,8 @@ impl Expr {
         let (mut expr, adv) = Self::comparison(tks, start)?;
         let mut addup_adv = adv;
 
-        while let tk_op @ Some(Token::EqualEqual | Token::BangEqual) = tks.get(start + adv) {
-            match Self::comparison(tks, start + addup_adv) {
+        while let tk_op @ Some(Token::EqualEqual | Token::BangEqual) = tks.get(start + addup_adv) {
+            match Self::comparison(tks, start + addup_adv + 1) {
                 Err(_) => break,
                 Ok((right, adv)) => {
                     expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
@@ -79,8 +79,8 @@ impl Expr {
         let mut addup_adv = adv;
 
         while let tk_op @ Some(Token::Greater | Token::GreaterEqual 
-                        | Token::Less | Token::LessEqual) = tks.get(start + adv) {
-            match Self::term(tks, start + addup_adv) {
+                        | Token::Less | Token::LessEqual) = tks.get(start + addup_adv) {
+            match Self::term(tks, start + addup_adv + 1) {
                 Err(_) => break,
                 Ok((right, adv)) => {
                     expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
@@ -96,8 +96,8 @@ impl Expr {
         let (mut expr, adv) = Self::factor(tks, start)?;
         let mut addup_adv = adv;
 
-        while let tk_op @ Some(Token::Minus | Token::Plus) = tks.get(start + adv) {
-            match Self::factor(tks, start + addup_adv) {
+        while let tk_op @ Some(Token::Minus | Token::Plus) = tks.get(start + addup_adv) {
+            match Self::factor(tks, start + addup_adv + 1) {
                 Err(_) => break,
                 Ok((right, adv)) => {
                     expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
@@ -113,8 +113,8 @@ impl Expr {
         let (mut expr, adv) = Self::unary(tks, start)?;
         let mut addup_adv = adv;
 
-        while let tk_op @ Some(Token::Slash | Token::Star) = tks.get(start + adv) {
-            match Self::unary(tks, start + addup_adv) {
+        while let tk_op @ Some(Token::Slash | Token::Star) = tks.get(start + addup_adv) {
+            match Self::unary(tks, start + addup_adv + 1) {
                 Err(_) => break,
                 Ok((right, adv)) => {
                     expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));

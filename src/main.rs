@@ -24,8 +24,6 @@ fn main() {
         let mut tokens: Vec<syntax::token::Token> = Vec::new();
         if let Err(errmsg) = syntax::token::scan_from_line(&input_buffer, &mut tokens) {
             eprintln!("failed to parse the input line: {}", errmsg);
-        } else {
-            dbg!(&tokens);
         };
 
         // let mut stmts: Vec<Stmt> = Vec::new();
@@ -33,7 +31,7 @@ fn main() {
         while !tokens.is_empty() {
             match Stmt::stmt(&tokens, 0) {
                 Ok((stmt, used)) => {
-                    tokens.remove(used);
+                    tokens.drain(0..used);
                     match stmt.exec() {
                         Err(msg) => println!("{}", msg),
                         _ => {},
