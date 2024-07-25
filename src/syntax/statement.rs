@@ -29,7 +29,11 @@ impl Stmt {
                         obj.set_name(idnt_name.clone());
                         return Ok(Some(obj));
                     },
-                    _ => {},
+                    _ => {
+                        let mut obj = Object::new();
+                        obj.set_name(idnt_name.clone());
+                        return Ok(Some(obj));
+                    },
                 }
             },
             _ => {
