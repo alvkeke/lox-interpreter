@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::types::object::{Object, ObjectContent};
+use crate::parser::types::object::{Object, ObjectContent};
 
 
 

@@ -1,4 +1,4 @@
-use crate::{types::object::Object, vm::LoxVM};
+use crate::{parser::types::object::Object, parser::vm::LoxVM};
 
 use super::{expression::Expr, token::Token};
 

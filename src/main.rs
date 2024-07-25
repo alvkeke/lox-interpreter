@@ -1,55 +1,11 @@
+mod parser;
 
-use std::{self, io::{self, Write}};
+use parser::LoxParser;
 
-use syntax::statement::Stmt;
-use vm::LoxVM;
-
-
-mod syntax {
-    pub mod token;
-    pub mod expression;
-    pub mod statement;
-}
-mod types {
-    pub mod object;
-    pub mod number;
-}
-
-mod vm;
 
 fn main() {
-    let stdin = io::stdin();
-    let mut vm = LoxVM::new();
 
-    loop {
-        let mut input_buffer: String = String::new();
-        print!(">> ");
-        io::stdout().flush().unwrap();
-        stdin.read_line(&mut input_buffer).unwrap();
-        let mut tokens: Vec<syntax::token::Token> = Vec::new();
-        if let Err(errmsg) = syntax::token::scan_from_line(&input_buffer, &mut tokens) {
-            eprintln!("failed to parse the input line: {}", errmsg);
-        };
-
-        // let mut stmts: Vec<Stmt> = Vec::new();
-        // while let 
-        while !tokens.is_empty() {
-            match Stmt::stmt(&tokens, 0) {
-                Ok((stmt, used)) => {
-                    tokens.drain(0..used);
-                    match stmt.exec(&mut vm) {
-                        Err(msg) => println!("{}", msg),
-                        _ => {},
-                    };
-                },
-                Err(msg) => {
-                    println!("{}", msg);
-                    break;
-                }
-            }
-        }
-
-        // break;  // for test
-    }
-
+    let mut lox = LoxParser::new();
+    lox.repl();
+    
 }

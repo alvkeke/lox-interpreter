@@ -1,4 +1,4 @@
-use crate::{syntax::token::Token, types::object::Object, vm::LoxVM};
+use crate::{parser::syntax::token::Token, parser::types::object::Object, parser::vm::LoxVM};
 
 
 #[derive(Debug)]
