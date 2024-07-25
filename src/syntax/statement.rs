@@ -45,7 +45,14 @@ impl Stmt {
 
     pub fn stmt(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
         match tks.get(start) {
-            Some(Token::Print) => Self::print(tks, start),
+            Some(Token::Print) => {
+                let (stmt, used) = Self::print(tks, start)?;
+                Ok((stmt, used))
+            },
+            Some(Token::Var) => {
+                let (stmt, used) = Self::decl(tks, start)?;
+                Ok((stmt, used))
+            },
             Some(_) => Self::expr(tks, start),
             None => Err(format!("Failed to get token from list")),
         }
@@ -64,19 +71,26 @@ impl Stmt {
         let idnt = idnt.unwrap().clone();
         ret_adv += 1;
         
-        if !matches!(tks.get(start+ret_adv), Some(Token::Equal)) {
-            return Ok((Stmt::Decl(idnt, None), ret_adv));
-        }
-
-        match Expr::expression(tks, start + ret_adv + 1) {
-            Ok((expr, adv)) => {
-                ret_adv += adv;
-                match tks.get(start + ret_adv) {
-                    Some(Token::Semicolon) => Ok((Stmt::Decl(idnt, Some(expr)), ret_adv+1)),
-                    _ => Err(format!("failed to parse statement")),
+        match tks.get(start + ret_adv) {
+            Some(Token::Semicolon) => {
+                // just return if end with `;'
+                ret_adv += 1;
+                return Ok((Stmt::Decl(idnt, None), ret_adv));
+            },
+            Some(Token::Equal) => {
+                ret_adv += 1;
+                match Expr::expression(tks, start + ret_adv) {
+                    Ok((expr, adv)) => {
+                        ret_adv += adv;
+                        match tks.get(start + ret_adv) {
+                            Some(Token::Semicolon) => Ok((Stmt::Decl(idnt, Some(expr)), ret_adv+1)),
+                            _ => Err(format!("failed to parse statement")),
+                        }
+                    },
+                    _ => Err(format!("failed to parse expression")),
                 }
             },
-            _ => Err(format!("failed to parse expression")),
+            tk => return Err(format!("unexpected token: {:#?}", tk)),
         }
 
     }
@@ -86,7 +100,7 @@ impl Stmt {
 
         match tks.get(start + adv) {
             Some(Token::Semicolon) => Ok((Stmt::Expr(expr), adv+1)),
-            tk => Err(format!("unexcepted token: {:?}", tk)),
+            tk => Err(format!("unexcepted token: {:#?}", tk)),
         }
     }
 
@@ -94,12 +108,14 @@ impl Stmt {
         if !matches!(tks.get(start), Some(Token::Print)) {
             return Err(format!("not start with Token: Print"));
         }
+        let mut used_adv = 1;
 
-        let (expr, adv) = Expr::expression(tks, start + 1)?;
+        let (expr, adv) = Expr::expression(tks, start + used_adv)?;
+        used_adv += adv;
 
-        match tks.get(start + 1 + adv) {
-            Some(Token::Semicolon) => Ok((Stmt::Print(expr), adv+1)),
-            tk => Err(format!("unexcepted token: {:?}", tk)),
+        match tks.get(start + used_adv) {
+            Some(Token::Semicolon) => Ok((Stmt::Print(expr), used_adv+1)),
+            tk => Err(format!("unexcepted token: {:#?}", tk)),
         }
 
     }
