@@ -44,7 +44,7 @@ impl Expr {
             Binary(left, EqualEqual, right) => left.evaluate()?.eq(&right.evaluate()?),
             Binary(left, BangEqual, right) => left.evaluate()?.ne(&right.evaluate()?),
             left => {
-                Err(format!("NOT CHECKED TYPE: {:?}", left))
+                Err(format!("NOT CHECKED TYPE: {:#?}", left))
             },
         }
     }
@@ -152,7 +152,7 @@ impl Expr {
                     Err(format!("cannot get close paren"))
                 }
             },
-            tk => Err(format!("unexpected token/status: {:?}", tk)),
+            tk => Err(format!("unexpected token/status: {:#?}", tk)),
         }
     }
 

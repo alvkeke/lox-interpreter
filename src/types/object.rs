@@ -92,14 +92,14 @@ impl Object {
         match self.content {
             Boolean(bool) => Ok(Object::bool_new(!bool)),
             Nil => Ok(Object::bool_new(true)),   // treat Nil as `false`
-            _ => Err(format!("not supported operation `Not(!)' on {:?}", self))
+            _ => Err(format!("not supported operation `Not(!)' on {:#?}", self))
         }
     }
 
     pub fn neg(&self) -> Result<Object, String> {
         match &self.content {
             ObjectContent::Number(num) => Ok(Object::number_new(-num.clone())),
-            _ => Err(format!("not supported operation `Not(!)' on {:?}", self))
+            _ => Err(format!("not supported operation `Not(!)' on {:#?}", self))
         }
     }
 
@@ -118,7 +118,7 @@ impl Object {
             (String(arg1), Number(arg2)) => {
                 Ok(Object::string_new(format!("{}{}", arg1, arg2)))
             },
-            _ => Err(format!("object type not allowed {:?} == {:?}", self, rhs)),
+            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
     }
 
@@ -128,7 +128,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::number_new(arg1.sub_ref(arg2)?))
             },
-            _ => Err(format!("object type not allowed {:?} == {:?}", self, rhs)),
+            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
     }
 
@@ -138,7 +138,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::number_new(arg1.mul_ref(arg2)?))
             },
-            _ => Err(format!("object type not allowed {:?} == {:?}", self, rhs)),
+            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
     }
 
@@ -148,7 +148,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::number_new(arg1.div_ref(arg2)?))
             },
-            _ => Err(format!("object type not allowed {:?} == {:?}", self, rhs)),
+            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
     }
 
@@ -190,7 +190,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::bool_new(arg1 < arg2))
             },
-            _ => Err(format!("object type not allowed {:?} == {:?}", self, other)),
+            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, other)),
         }
     }
 
@@ -200,7 +200,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::bool_new(arg1 <= arg2))
             },
-            _ => Err(format!("object type not allowed {:?} == {:?}", self, other)),
+            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, other)),
         }
     }
 
@@ -210,7 +210,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::bool_new(arg1 > arg2))
             },
-            _ => Err(format!("object type not allowed {:?} == {:?}", self, other)),
+            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, other)),
         }
     }
 
@@ -220,7 +220,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::bool_new(arg1 >= arg2))
             },
-            _ => Err(format!("object type not allowed {:?} == {:?}", self, other)),
+            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, other)),
         }
     }
 

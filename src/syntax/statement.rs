@@ -28,7 +28,7 @@ impl Stmt {
                 print!("{}", expr.evaluate()?);
             },
             Stmt::Decl(Token::Identifier(idnt_name), expr) => {
-                println!("TODO::: decleared var: {} = {:?}", idnt_name, expr);
+                println!("TODO::: decleared var: {} = {:#?}", idnt_name, expr);
                 // todo!()
             },
             _ => {

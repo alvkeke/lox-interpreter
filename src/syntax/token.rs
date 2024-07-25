@@ -246,7 +246,7 @@ pub fn scan_from_line(line: &String, list: &mut Vec<Token>) -> Result<i32, Strin
             }
 
             (_, _) => {
-                return Err(format!("encounter unepxected char: {}, next: {:?}", ch, peeked));
+                return Err(format!("encounter unepxected char: {}, next: {:#?}", ch, peeked));
             },
         };
     }
