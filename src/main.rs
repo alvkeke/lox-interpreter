@@ -38,7 +38,6 @@ fn main() {
                 Ok((stmt, used)) => {
                     tokens.drain(0..used);
                     match stmt.exec(&mut vm) {
-                        Ok(Some(obj)) => vm.var_add(obj),
                         Err(msg) => println!("{}", msg),
                         _ => {},
                     };

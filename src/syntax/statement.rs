@@ -14,7 +14,7 @@ pub enum Stmt{
 
 impl Stmt {
 
-    pub fn exec(&self, vm: &mut LoxVM) -> Result<Option<Object>, String> {
+    pub fn exec(&self, vm: &mut LoxVM) -> Result<Option<i32>, String> {
         match self {
             Stmt::Expr(expr) => {
                 println!("{}", expr.evaluate(vm)?);
@@ -23,18 +23,19 @@ impl Stmt {
                 println!("{}", expr.evaluate(vm)?);
             },
             Stmt::Decl(Token::Identifier(idnt_name), expr) => {
-                match expr {
+                let new_obj = match expr {
                     Some(expr) => {
                         let mut obj = expr.evaluate(vm)?;
                         obj.set_name(idnt_name.clone());
-                        return Ok(Some(obj));
+                        obj
                     },
                     _ => {
                         let mut obj = Object::new();
                         obj.set_name(idnt_name.clone());
-                        return Ok(Some(obj));
+                        obj
                     },
-                }
+                };
+                vm.var_add(new_obj);
             },
             _ => {
                 return Err(format!("Unexpected statement"));
