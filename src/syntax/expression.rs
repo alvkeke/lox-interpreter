@@ -22,10 +22,10 @@ impl Expr {
         match self {
             // simple values
             Literal(Nil) => Ok(Object::new()),
-            Literal(False) => Ok(Object::newBool(false)),
-            Literal(True) => Ok(Object::newBool(true)),
-            Literal(String(str)) => Ok(Object::newString(str.clone())),
-            Literal(Number(num)) => Ok(Object::newNumber(num.clone())),
+            Literal(False) => Ok(Object::bool_new(false)),
+            Literal(True) => Ok(Object::bool_new(true)),
+            Literal(String(str)) => Ok(Object::string_new(str.clone())),
+            Literal(Number(num)) => Ok(Object::number_new(num.clone())),
             Literal(Identifier(idnt_name)) => todo!(),
             // Unary expr
             Unary(Bang, expr) => expr.evaluate()?.not(),

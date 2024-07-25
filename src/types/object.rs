@@ -44,31 +44,31 @@ impl Object {
         Object { name: None, content: ObjectContent::Nil }
     }
 
-    pub fn setNil(&mut self) {
+    pub fn nil_set(&mut self) {
         self.content = ObjectContent::Nil;
     }
     
-    pub fn newBool(boolean: bool) -> Self {
+    pub fn bool_new(boolean: bool) -> Self {
         Object { name: None, content: ObjectContent::Boolean(boolean) }
     }
 
-    pub fn setBool(&mut self, boolean: bool) {
+    pub fn bool_set(&mut self, boolean: bool) {
         self.content = ObjectContent::Boolean(boolean);
     }
 
-    pub fn newNumber(num: Number) -> Self {
+    pub fn number_new(num: Number) -> Self {
         Object { name: None, content: ObjectContent::Number(num) }
     }
 
-    pub fn setNumber(&mut self, num: Number) {
+    pub fn number_set(&mut self, num: Number) {
         self.content = ObjectContent::Number(num);
     }
 
-    pub fn newString(str: String) -> Self {
+    pub fn string_new(str: String) -> Self {
         Object { name: None, content: ObjectContent::String(str) }
     }
 
-    pub fn setString(&mut self, str: String) {
+    pub fn string_set(&mut self, str: String) {
         self.content = ObjectContent::String(str);
     }
 
@@ -90,15 +90,15 @@ impl Object {
     pub fn not(&self) -> Result<Object, String> {
         use ObjectContent::{Boolean, Nil};
         match self.content {
-            Boolean(bool) => Ok(Object::newBool(!bool)),
-            Nil => Ok(Object::newBool(true)),   // treat Nil as `false`
+            Boolean(bool) => Ok(Object::bool_new(!bool)),
+            Nil => Ok(Object::bool_new(true)),   // treat Nil as `false`
             _ => Err(format!("not supported operation `Not(!)' on {:?}", self))
         }
     }
 
     pub fn neg(&self) -> Result<Object, String> {
         match &self.content {
-            ObjectContent::Number(num) => Ok(Object::newNumber(-num.clone())),
+            ObjectContent::Number(num) => Ok(Object::number_new(-num.clone())),
             _ => Err(format!("not supported operation `Not(!)' on {:?}", self))
         }
     }
@@ -107,16 +107,16 @@ impl Object {
         use ObjectContent::*;
         match (&self.content, &rhs.content) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newNumber(arg1.add_ref(&arg2)?))
+                Ok(Object::number_new(arg1.add_ref(&arg2)?))
             },
             (String(arg1), String(arg2)) => {
-                Ok(Object::newString(format!("{}{}", arg1, arg2)))
+                Ok(Object::string_new(format!("{}{}", arg1, arg2)))
             },
             (Number(arg1), String(arg2)) => {
-                Ok(Object::newString(format!("{}{}", arg1, arg2)))
+                Ok(Object::string_new(format!("{}{}", arg1, arg2)))
             },
             (String(arg1), Number(arg2)) => {
-                Ok(Object::newString(format!("{}{}", arg1, arg2)))
+                Ok(Object::string_new(format!("{}{}", arg1, arg2)))
             },
             _ => Err(format!("object type not allowed {:?} == {:?}", self, rhs)),
         }
@@ -126,7 +126,7 @@ impl Object {
         use ObjectContent::*;
         match (&self.content, &rhs.content) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newNumber(arg1.sub_ref(arg2)?))
+                Ok(Object::number_new(arg1.sub_ref(arg2)?))
             },
             _ => Err(format!("object type not allowed {:?} == {:?}", self, rhs)),
         }
@@ -136,7 +136,7 @@ impl Object {
         use ObjectContent::*;
         match (&self.content, &rhs.content) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newNumber(arg1.mul_ref(arg2)?))
+                Ok(Object::number_new(arg1.mul_ref(arg2)?))
             },
             _ => Err(format!("object type not allowed {:?} == {:?}", self, rhs)),
         }
@@ -146,7 +146,7 @@ impl Object {
         use ObjectContent::*;
         match (&self.content, &rhs.content) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newNumber(arg1.div_ref(arg2)?))
+                Ok(Object::number_new(arg1.div_ref(arg2)?))
             },
             _ => Err(format!("object type not allowed {:?} == {:?}", self, rhs)),
         }
@@ -155,18 +155,18 @@ impl Object {
     pub fn eq(&self, other: &Self) -> Result<Object, String> {
         use ObjectContent::*;
         match (&self.content, &other.content) {
-            (Nil, Nil) => Ok(Object::newBool(true)),
+            (Nil, Nil) => Ok(Object::bool_new(true)),
             (Boolean(arg1), Boolean(arg2)) => {
-                Ok(Object::newBool(arg1 == arg2))
+                Ok(Object::bool_new(arg1 == arg2))
             },
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newBool(arg1 == arg2))
+                Ok(Object::bool_new(arg1 == arg2))
             },
             (String(arg1), String(arg2)) => {
-                Ok(Object::newBool(arg1 == arg2))
+                Ok(Object::bool_new(arg1 == arg2))
             },
             // false if type mismatch
-            _ => Ok(Object::newBool(false)),
+            _ => Ok(Object::bool_new(false)),
         }
     }
     
@@ -176,7 +176,7 @@ impl Object {
         match self.eq(other) {
             Ok(obj) => {
                 match obj.content {
-                    Boolean(b) => Ok(Object::newBool(!b)),
+                    Boolean(b) => Ok(Object::bool_new(!b)),
                     _ => panic!("should not get type beyond ObjectContent::Boolean()"),
                 }
             },
@@ -188,7 +188,7 @@ impl Object {
         use ObjectContent::*;
         match (&self.content, &other.content) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newBool(arg1 < arg2))
+                Ok(Object::bool_new(arg1 < arg2))
             },
             _ => Err(format!("object type not allowed {:?} == {:?}", self, other)),
         }
@@ -198,7 +198,7 @@ impl Object {
         use ObjectContent::*;
         match (&self.content, &other.content) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newBool(arg1 <= arg2))
+                Ok(Object::bool_new(arg1 <= arg2))
             },
             _ => Err(format!("object type not allowed {:?} == {:?}", self, other)),
         }
@@ -208,7 +208,7 @@ impl Object {
         use ObjectContent::*;
         match (&self.content, &other.content) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newBool(arg1 > arg2))
+                Ok(Object::bool_new(arg1 > arg2))
             },
             _ => Err(format!("object type not allowed {:?} == {:?}", self, other)),
         }
@@ -218,7 +218,7 @@ impl Object {
         use ObjectContent::*;
         match (&self.content, &other.content) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::newBool(arg1 >= arg2))
+                Ok(Object::bool_new(arg1 >= arg2))
             },
             _ => Err(format!("object type not allowed {:?} == {:?}", self, other)),
         }
