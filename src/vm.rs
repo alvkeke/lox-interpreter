@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::types::object::{Object, ObjectContent};
 
 
@@ -5,82 +7,43 @@ use crate::types::object::{Object, ObjectContent};
 
 
 pub struct LoxVM {
-    vars: Vec<Object>,
+    vars: HashMap<String, Object>,
 }
 
 
 impl LoxVM {
     pub fn new() -> LoxVM {
-        LoxVM { vars: Vec::new() }
+        LoxVM { vars: HashMap::new() }
     }
 
     pub fn var_add(&mut self, obj: Object) {
         if let Some(name) = obj.get_name() {
-            self.var_del(name);
+            self.vars.insert(name.clone(), obj);
         }
-        self.vars.push(obj)
+        println!("dbg: mapsize: {}", self.vars.len());
     }
 
-    fn var_del(&mut self, name: &String) {
-        let idx = self.var_index(name);
-        if let Some(idx) = idx {
-            self.vars.remove(idx);
-        }
+    pub fn var_set(&mut self, name: String, content: ObjectContent) {
+        let mut obj = Object::content_new(content);
+        obj.set_name(name.clone());
+        self.vars.insert(name, obj);
+        println!("dbg: mapsize: {}", self.vars.len());
     }
 
-    fn var_index(&mut self, name: &String) -> Option<usize> {
-        for idx in 0..self.vars.len() {
-            if let Some(obj) = self.vars.get(idx) {
-                if let Some(oname) = obj.get_name() {
-                    if oname.eq(name) {
-                        return Some(idx);
-                    }
-                }
-            }
-        }
-
-        None
+    fn var_del(&mut self, name: String) {
+        self.vars.remove(&name);
+        println!("dbg: mapsize: {}", self.vars.len());
     }
 
-    pub fn var_find(&mut self, name: &String) -> Option<&mut Object> {
-
-        let mut iter = self.vars.iter_mut();
-        while let Some(obj) = iter.next() {
-            if let Some(oname) = obj.get_name() {
-                if name.eq(oname) {
-                    return Some(obj);
-                }
-            }
-        }
-        None
+    pub fn var_get(&mut self, name: &String) -> Option<&mut Object> {
+        println!("dbg: mapsize: {}", self.vars.len());
+        self.vars.get_mut(name)
     }
 
     pub fn var_exist(&mut self, name: &String) -> bool {
-        match self.var_find(name) {
-            Some(_) => true,
-            None => false,
-        }
+        println!("dbg: mapsize: {}", self.vars.len());
+        self.vars.contains_key(name)
     }
-
-    /**
-     * modify variable if it exist in list, 
-     * and create a new one if NOT exist.
-     * 
-     * return -> bool : true if new obj created, otherwise false
-     */
-    pub fn var_set(&mut self, name: &String, content: ObjectContent) -> bool {
-        match self.var_find(name) {
-            Some(obj) => {
-                obj.content_set(content);
-                false
-            },
-            None => {
-                self.vars.push(Object::content_new(content));
-                true
-            }
-        }
-    }
-
 
 }
 

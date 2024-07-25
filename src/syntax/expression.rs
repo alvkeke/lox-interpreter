@@ -23,7 +23,7 @@ impl Expr {
             Literal(String(str)) => Ok(Object::string_new(str.clone())),
             Literal(Number(num)) => Ok(Object::number_new(num.clone())),
             Literal(Identifier(idnt_name)) => {
-                match vm.var_find(idnt_name) {
+                match vm.var_get(idnt_name) {
                     Some(oo) => Ok(oo.clone()),
                     None => Err(format!("object {} not found", idnt_name)),
                 }
