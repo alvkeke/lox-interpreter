@@ -7,17 +7,16 @@ pub enum Expr {
     Group (Box<Expr>),
     Literal (Token),
     Unary (Token, Box<Expr>),
-    None
 }
 
 
 impl Expr {
 
-    fn visit(self) -> Result<Object, String> {
+    pub fn visit(self) -> Result<Object, String> {
         self.evaluate()
     }
 
-    fn evaluate(&self) -> Result<Object, String> {
+    pub fn evaluate(&self) -> Result<Object, String> {
         use Expr::*;
         use Token::{*};
         match self {
@@ -27,6 +26,7 @@ impl Expr {
             Literal(True) => Ok(Object::newBool(true)),
             Literal(String(str)) => Ok(Object::newString(str.clone())),
             Literal(Number(num)) => Ok(Object::newNumber(num.clone())),
+            Literal(Identifier(idnt_name)) => todo!(),
             // Unary expr
             Unary(Bang, expr) => expr.evaluate()?.not(),
             Unary(Minus, expr) => expr.evaluate()?.neg(),
@@ -43,9 +43,6 @@ impl Expr {
             Binary(left, LessEqual, right) => left.evaluate()?.le(&right.evaluate()?),
             Binary(left, EqualEqual, right) => left.evaluate()?.eq(&right.evaluate()?),
             Binary(left, BangEqual, right) => left.evaluate()?.ne(&right.evaluate()?),
-            None => {
-                panic!("should not reach Expr::None")
-            },
             left => {
                 Err(format!("NOT CHECKED TYPE: {:?}", left))
             },
@@ -56,95 +53,84 @@ impl Expr {
 
 // parsing methods
 impl Expr {
-    fn expression(tks: &Vec<Token>, start: usize) -> (Self, usize) {
+    pub fn expression(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
         Self::equality(tks, start)
     }
 
-    fn equality(tks: &Vec<Token>, start: usize) -> (Self, usize) {
-        let (mut expr, adv) = Self::comparison(tks, start);
-        if let Expr::None = expr {
-            return (Expr::None, 0);
-        }
+    pub fn equality(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+        let (mut expr, adv) = Self::comparison(tks, start)?;
         let mut addup_adv = adv;
 
         while let tk_op @ Some(Token::EqualEqual | Token::BangEqual) = tks.get(start + adv) {
-            let (right, adv) = Self::comparison(tks, start);
-            if let Expr::None = right {
-                break;
+            match Self::comparison(tks, start) {
+                Err(_) => break,
+                Ok((right, adv)) => {
+                    expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
+                    addup_adv += adv + 1;     // operation token                    
+                },
             }
-            expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
-            addup_adv += adv + 1;     // operation token
         }
 
-        (expr, addup_adv)
+        Ok((expr, addup_adv))
     }
 
-    fn comparison(tks: &Vec<Token>, start: usize) -> (Self, usize) {
-        let (mut expr, adv) = Self::term(tks, start);
-        if let Expr::None = expr {
-            return (Expr::None, 0);
-        }
+    pub fn comparison(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+        let (mut expr, adv) = Self::term(tks, start)?;
         let mut addup_adv = adv;
 
         while let tk_op @ Some(Token::Greater | Token::GreaterEqual 
                         | Token::Less | Token::LessEqual) = tks.get(start + adv) {
-            let (right, adv) = Self::term(tks, start);
-            if let Expr::None = right {
-                break;
+            match Self::term(tks, start) {
+                Err(_) => break,
+                Ok((right, adv)) => {
+                    expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
+                    addup_adv += adv + 1;     // operation token                    
+                },
             }
-            expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
-            addup_adv += adv + 1;     // operation token
         }
 
-        (expr, addup_adv)
+        Ok((expr, addup_adv))
     }
 
-    fn term(tks: &Vec<Token>, start: usize) -> (Self, usize) {
-        let (mut expr, adv) = Self::factor(tks, start);
-        if let Expr::None = expr {
-            return (Expr::None, 0);
-        }
+    pub fn term(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+        let (mut expr, adv) = Self::factor(tks, start)?;
         let mut addup_adv = adv;
 
         while let tk_op @ Some(Token::Minus | Token::Plus) = tks.get(start + adv) {
-            let (right, adv) = Self::factor(tks, start);
-            if let Expr::None = right {
-                break;
+            match Self::factor(tks, start) {
+                Err(_) => break,
+                Ok((right, adv)) => {
+                    expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
+                    addup_adv += adv + 1;     // operation token                    
+                },
             }
-            expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
-            addup_adv += adv + 1;     // operation token
         }
 
-        (expr, addup_adv)
+        Ok((expr, addup_adv))
     }
 
-    fn factor(tks: &Vec<Token>, start: usize) -> (Self, usize) {
-        let (mut expr, adv) = Self::unary(tks, start);
-        if let Expr::None = expr {
-            return (Expr::None, 0);
-        }
+    pub fn factor(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+        let (mut expr, adv) = Self::unary(tks, start)?;
         let mut addup_adv = adv;
 
         while let tk_op @ Some(Token::Slash | Token::Star) = tks.get(start + adv) {
-            let (right, adv) = Self::unary(tks, start);
-            if let Expr::None = right {
-                break;
+            match Self::unary(tks, start) {
+                Err(_) => break,
+                Ok((right, adv)) => {
+                    expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
+                    addup_adv += adv + 1;     // operation token                    
+                },
             }
-            expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
-            addup_adv += adv + 1;     // operation token
         }
 
-        (expr, addup_adv)
+        Ok((expr, addup_adv))
     }
 
-    fn unary(tks: &Vec<Token>, start: usize) -> (Self, usize) {
+    pub fn unary(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
         match tks.get(start) {
             tk_op @ Some(Token::Bang | Token::Minus) => {
-                let (expr, adv) = Self::unary(tks, start+1);
-                match expr {
-                    Expr::None => (Expr::None, 0),
-                    expr => (Expr::Unary(tk_op.unwrap().clone(), Box::new(expr)), 1+adv),      // !/- + 
-                }
+                let (expr, adv) = Self::unary(tks, start+1)?;
+                Ok((Expr::Unary(tk_op.unwrap().clone(), Box::new(expr)), 1+adv))      // !/- + 
             },
             _ => {
                 Self::primary(tks, start)
@@ -152,25 +138,25 @@ impl Expr {
         }
     }
 
-    fn primary(tks: &Vec<Token>, start: usize) -> (Self, usize) {
+    pub fn primary(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
         match tks.get(start) {
-            tk @ Some(Token::False | Token::True | Token::Nil) => (Expr::Literal(tk.unwrap().clone()), 1),
-            tk @ Some(Token::String(_) | Token::Number(_)) => (Expr::Literal(tk.unwrap().clone()), 1),
+            tk @ Some(Token::False | Token::True | Token::Nil) => Ok((Expr::Literal(tk.unwrap().clone()), 1)),
+            tk @ Some(Token::String(_) | Token::Number(_)) => Ok((Expr::Literal(tk.unwrap().clone()), 1)),
+            tk @ Some(Token::Identifier(_)) => Ok((Expr::Literal(tk.unwrap().clone()), 1)),
             Some(Token::LeftParen) => {
-                let (expr, adv) = Self::expression(tks, start+1);
+                let (expr, adv) = Self::expression(tks, start+1)?;
 
-                if !matches!(expr, Expr::None) && 
-                    matches!(tks.get(start+adv+1), Some(Token::RightParen)) {
-                    (Expr::Group(Box::new(expr)), 2 + adv)  // L/R Paren + increased index(adv)
+                if matches!(tks.get(start+adv+1), Some(Token::RightParen)) {
+                    Ok((Expr::Group(Box::new(expr)), 2 + adv))  // L/R Paren + increased index(adv)
                 } else {
-                    (Expr::None, 0)
+                    Err(format!("cannot get close paren"))
                 }
             },
-            _ => (Expr::None, 0),
+            tk => Err(format!("unexpected token/status: {:?}", tk)),
         }
     }
 
-    fn synchronize(tks: &Vec<Token>, start: usize) -> usize {
+    pub fn synchronize(tks: &Vec<Token>, start: usize) -> usize {
         let mut idx: usize = 0;
         while let Some(tk) = tks.get(start + idx) {
             match tk {

@@ -4,6 +4,7 @@ use std::{self, io::{self, Write}};
 mod syntax {
     pub mod token;
     pub mod expression;
+    pub mod statement;
 }
 mod types {
     pub mod object;

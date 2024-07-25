@@ -10,6 +10,15 @@ pub struct Object {
     content: ObjectContent,
 }
 
+impl Display for Object {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.name {
+            Some(name) => write!(f, "{}={}", name, self.content),
+            None => write!(f, "Object({})", self.content),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum ObjectContent {
     Nil,
