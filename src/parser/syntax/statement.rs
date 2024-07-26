@@ -6,6 +6,7 @@ use super::{expression::Expr, token::Token};
 
 #[derive(Debug)]
 pub enum Stmt{
+    Block(Vec<Stmt>),
     Decl(Token, Option<Expr>),
     Expr(Expr),
     Print(Expr),
@@ -22,6 +23,10 @@ impl Stmt {
             Stmt::Print(expr) => {
                 println!("{}", expr.evaluate(parser)?);
             },
+            Stmt::Block(stmts) => {
+                println!("TODO:::: block exec: {:#?}", stmts);
+                todo!()
+            }
             Stmt::Decl(Token::Identifier(idnt_name), expr) => {
                 match expr {
                     Some(expr) => {
@@ -55,9 +60,30 @@ impl Stmt {
                 let (stmt, used) = Self::decl(tks, start)?;
                 Ok((stmt, used))
             },
+            Some(Token::LeftBrace) => Ok(Self::block(tks, start)?),
             Some(_) => Self::expr(tks, start),
             None => Err(format!("Failed to get token from list")),
         }
+    }
+
+    pub fn block(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+        if !matches!(tks.get(start), Some(Token::LeftBrace)) {
+            return Err("not start with Token: {".to_string());
+        }
+        let mut ret_adv = 1;
+        let mut stmt_arr = Vec::new();
+
+        loop {
+            if let Some(Token::RightBrace) = tks.get(start+ ret_adv) {
+                ret_adv += 1;
+                break;
+            }
+            let (stmt, used) = Self::stmt(tks, start + ret_adv)?;
+            stmt_arr.push(stmt);
+            ret_adv += used;
+        }
+
+        Ok((Self::Block(stmt_arr), ret_adv))
     }
 
     pub fn decl(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
