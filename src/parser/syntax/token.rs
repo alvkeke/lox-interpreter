@@ -101,6 +101,57 @@ impl Clone for Token {
     }
 }
 
+impl PartialEq for Token {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Token::LeftParen, Token::LeftParen) => true,
+            (Token::RightParen, Token::RightParen) => true,
+            (Token::LeftBrace, Token::LeftBrace) => true,
+            (Token::RightBrace, Token::RightBrace) => true,
+            (Token::Comma, Token::Comma) => true,
+            (Token::Dot, Token::Dot) => true,
+            (Token::Semicolon, Token::Semicolon) => true,
+            (Token::Minus, Token::Minus) => true,
+            (Token::Plus, Token::Plus) => true,
+            (Token::Slash, Token::Slash) => true,
+            (Token::Star, Token::Star) => true,
+            (Token::Bang, Token::Bang) => true,
+            (Token::BangEqual, Token::BangEqual) => true,
+            (Token::Equal, Token::Equal) => true,
+            (Token::EqualEqual, Token::EqualEqual) => true,
+            (Token::Greater, Token::Greater) => true,
+            (Token::GreaterEqual, Token::GreaterEqual) => true,
+            (Token::Less, Token::Less) => true,
+            (Token::LessEqual, Token::LessEqual) => true,
+            (Token::Identifier(a), Token::Identifier(b)) => a == b,
+            (Token::String(a), Token::String(b)) => a == b,
+            (Token::Number(a), Token::Number(b)) => a == b,
+            (Token::And, Token::And) => true,
+            (Token::Class, Token::Class) => true,
+            (Token::Else, Token::Else) => true,
+            (Token::False, Token::False) => true,
+            (Token::Fun, Token::Fun) => true,
+            (Token::For, Token::For) => true,
+            (Token::If, Token::If) => true,
+            (Token::Nil, Token::Nil) => true,
+            (Token::Or, Token::Or) => true,
+            (Token::Print, Token::Print) => true,
+            (Token::Return, Token::Return) => true,
+            (Token::Super, Token::Super) => true,
+            (Token::This, Token::This) => true,
+            (Token::True, Token::True) => true,
+            (Token::Var, Token::Var) => true,
+            (Token::While, Token::While) => true,
+            (Token::EOF, Token::EOF) => true,
+            _ => false,
+        }
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        !self.eq(other)
+    }
+}
+
 #[allow(dead_code)]
 fn scan_from_snap(snap: &String) -> Result<Vec<Token>, String> {
     let mut result: Vec<Token> = Vec::new();

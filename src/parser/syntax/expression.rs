@@ -97,73 +97,48 @@ impl Expr {
         }
     }
 
+    fn binary_common(
+        tks: &Vec<Token>, start: usize,
+        next_fn: fn(&Vec<Token>, usize) -> Result<(Self, usize), String>,
+        ops: &[Token]
+    ) -> Result<(Self, usize), String> {
+        let (mut expr, adv) = next_fn(tks, start)?;
+        let mut ret_adv = adv;
+
+        while let Some(tk_op) = tks.get(start + ret_adv) {
+            if ops.contains(tk_op) {
+                match next_fn(tks, start + ret_adv + 1) {
+                    Err(_) => break,
+                    Ok((right, adv)) => {
+                        expr = Expr::Binary(Box::new(expr), tk_op.clone(), Box::new(right));
+                        ret_adv += adv + 1; // operation token
+                    },
+                }
+            } else {
+                break;
+            }
+        }
+
+        Ok((expr, ret_adv))
+    }
+
+    const EQUALITY_OPS: [Token; 2] = [Token::EqualEqual, Token::BangEqual];
     pub fn equality(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
-        let (mut expr, adv) = Self::comparison(tks, start)?;
-        let mut ret_adv = adv;
-
-        while let tk_op @ Some(Token::EqualEqual | Token::BangEqual) = tks.get(start + ret_adv) {
-            match Self::comparison(tks, start + ret_adv + 1) {
-                Err(_) => break,
-                Ok((right, adv)) => {
-                    expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
-                    ret_adv += adv + 1;     // operation token
-                },
-            }
-        }
-
-        Ok((expr, ret_adv))
+        Self::binary_common(tks, start, Self::comparison, &Self::EQUALITY_OPS)
     }
 
+    const COMPARISON_OPS: [Token; 4] = [Token::Greater, Token::GreaterEqual, Token::Less, Token::LessEqual];
     pub fn comparison(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
-        let (mut expr, adv) = Self::term(tks, start)?;
-        let mut ret_adv = adv;
-
-        while let tk_op @ Some(Token::Greater | Token::GreaterEqual 
-                        | Token::Less | Token::LessEqual) = tks.get(start + ret_adv) {
-            match Self::term(tks, start + ret_adv + 1) {
-                Err(_) => break,
-                Ok((right, adv)) => {
-                    expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
-                    ret_adv += adv + 1;     // operation token
-                },
-            }
-        }
-
-        Ok((expr, ret_adv))
+        Self::binary_common(tks, start, Self::term, &Self::COMPARISON_OPS)
     }
-
+    const TERM_OPS: [Token; 2] = [Token::Minus, Token::Plus];
     pub fn term(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
-        let (mut expr, adv) = Self::factor(tks, start)?;
-        let mut ret_adv = adv;
-
-        while let tk_op @ Some(Token::Minus | Token::Plus) = tks.get(start + ret_adv) {
-            match Self::factor(tks, start + ret_adv + 1) {
-                Err(_) => break,
-                Ok((right, adv)) => {
-                    expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
-                    ret_adv += adv + 1;     // operation token
-                },
-            }
-        }
-
-        Ok((expr, ret_adv))
+        Self::binary_common(tks, start, Self::factor, &Self::TERM_OPS)
     }
 
+    const FACTOR_OPS: [Token; 2] = [Token::Slash, Token::Star];
     pub fn factor(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
-        let (mut expr, adv) = Self::unary(tks, start)?;
-        let mut ret_adv = adv;
-
-        while let tk_op @ Some(Token::Slash | Token::Star) = tks.get(start + ret_adv) {
-            match Self::unary(tks, start + ret_adv + 1) {
-                Err(_) => break,
-                Ok((right, adv)) => {
-                    expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
-                    ret_adv += adv + 1;     // operation token
-                },
-            }
-        }
-
-        Ok((expr, ret_adv))
+        Self::binary_common(tks, start, Self::unary, &Self::FACTOR_OPS)
     }
 
     pub fn unary(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
