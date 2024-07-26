@@ -7,17 +7,17 @@ use syntax::token::Token;
 use vm::LoxVM;
 
 
-pub mod syntax {
+mod syntax {
     pub mod token;
     pub mod expression;
     pub mod statement;
 }
-pub mod types {
+mod types {
     pub mod object;
     pub mod number;
 }
 
-pub mod vm;
+mod vm;
 
 
 pub struct LoxParser {
