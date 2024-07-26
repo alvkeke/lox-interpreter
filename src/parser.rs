@@ -64,7 +64,7 @@ impl LoxParser {
         Ok(())
     }
 
-    pub fn exec_stmt_all_avaiable(&mut self) -> Result<(), String> {
+    pub fn exec_stmt_all_available(&mut self) -> Result<(), String> {
         while !self.tokens.is_empty() {
             let stmt = self.parse_stmt()?;
             self.exec_stmt(stmt)?;
@@ -105,7 +105,7 @@ impl LoxParser {
                 continue;
             }
 
-            if let Err(msg) = self.exec_stmt_all_avaiable() {
+            if let Err(msg) = self.exec_stmt_all_available() {
                 eprintln!("{}", msg);
             }
         }

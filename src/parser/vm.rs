@@ -28,7 +28,7 @@ impl LoxVM {
         match self.vars.contains_key(&name) {
             true => {
                 self.obj_set(name, obj.clone());
-                Ok(obj)                
+                Ok(obj)
             },
             false => {
                 Err(format!("cannot find object named: {}", name))

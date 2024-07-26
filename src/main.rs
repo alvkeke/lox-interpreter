@@ -7,5 +7,5 @@ fn main() {
 
     let mut lox = LoxParser::new();
     lox.repl();
-    
+
 }
