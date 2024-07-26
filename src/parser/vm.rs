@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::parser::types::object::{Object, ObjectContent};
+use crate::parser::types::object::Object;
 
 
 
@@ -16,33 +16,33 @@ impl LoxVM {
         LoxVM { vars: HashMap::new() }
     }
 
-    pub fn var_add(&mut self, obj: Object) {
-        if let Some(name) = obj.get_name() {
-            self.vars.insert(name.clone(), obj);
-        }
-        println!("dbg: mapsize: {}", self.vars.len());
-    }
-
-    pub fn var_set(&mut self, name: String, content: ObjectContent) {
-        let mut obj = Object::content_new(content);
-        obj.set_name(name.clone());
+    /**
+     * add or set object, add a new object if not exist,
+     * modify the value if the object exist with `name`
+     */
+    pub fn obj_set(&mut self, name: String, obj: Object) {
         self.vars.insert(name, obj);
-        println!("dbg: mapsize: {}", self.vars.len());
     }
 
-    fn var_del(&mut self, name: String) {
-        self.vars.remove(&name);
-        println!("dbg: mapsize: {}", self.vars.len());
+    pub fn obj_set_if_exist(&mut self, name: String, obj: Object) -> Result<Object, String> {
+        match self.vars.contains_key(&name) {
+            true => {
+                self.obj_set(name, obj.clone());
+                Ok(obj)                
+            },
+            false => {
+                Err(format!("cannot find object named: {}", name))
+            }
+        }
     }
 
-    pub fn var_get(&mut self, name: &String) -> Option<&mut Object> {
-        println!("dbg: mapsize: {}", self.vars.len());
+    #[allow(dead_code)]
+    fn obj_pop(&mut self, name: String) -> Option<Object> {
+        self.vars.remove(&name)
+    }
+
+    pub fn obj_get(&mut self, name: &String) -> Option<&mut Object> {
         self.vars.get_mut(name)
-    }
-
-    pub fn var_exist(&mut self, name: &String) -> bool {
-        println!("dbg: mapsize: {}", self.vars.len());
-        self.vars.contains_key(name)
     }
 
 }

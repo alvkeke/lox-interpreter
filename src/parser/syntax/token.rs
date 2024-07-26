@@ -101,6 +101,7 @@ impl Clone for Token {
     }
 }
 
+#[allow(dead_code)]
 fn scan_from_snap(snap: &String) -> Result<Vec<Token>, String> {
     let mut result: Vec<Token> = Vec::new();
     if let Err(msg) = scan_from_line(snap, &mut result) {

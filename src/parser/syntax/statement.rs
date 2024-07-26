@@ -23,19 +23,15 @@ impl Stmt {
                 println!("{}", expr.evaluate(parser)?);
             },
             Stmt::Decl(Token::Identifier(idnt_name), expr) => {
-                let new_obj = match expr {
+                match expr {
                     Some(expr) => {
-                        let mut obj = expr.evaluate(parser)?;
-                        obj.set_name(idnt_name.clone());
-                        obj
+                        let obj = expr.evaluate(parser)?;
+                        parser.vm.obj_set(idnt_name.clone(), obj);
                     },
                     _ => {
-                        let mut obj = Object::new();
-                        obj.set_name(idnt_name.clone());
-                        obj
+                        parser.vm.obj_set(idnt_name.clone(), Object::Nil);
                     },
                 };
-                parser.vm.var_add(new_obj);
             },
             _ => {
                 return Err(format!("Unexpected statement"));

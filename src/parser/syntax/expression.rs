@@ -18,13 +18,13 @@ impl Expr {
         use Token::{*};
         match self {
             // simple values
-            Literal(Nil) => Ok(Object::new()),
-            Literal(False) => Ok(Object::bool_new(false)),
-            Literal(True) => Ok(Object::bool_new(true)),
-            Literal(String(str)) => Ok(Object::string_new(str.clone())),
-            Literal(Number(num)) => Ok(Object::number_new(num.clone())),
+            Literal(Nil) => Ok(Object::Nil),
+            Literal(False) => Ok(Object::Boolean(false)),
+            Literal(True) => Ok(Object::Boolean(true)),
+            Literal(String(str)) => Ok(Object::String(str.clone())),
+            Literal(Number(num)) => Ok(Object::Number(num.clone())),
             Literal(Identifier(idnt_name)) => {
-                match parser.vm.var_get(idnt_name) {
+                match parser.vm.obj_get(idnt_name) {
                     Some(oo) => Ok(oo.clone()),
                     None => Err(format!("object {} not found", idnt_name)),
                 }
@@ -47,15 +47,7 @@ impl Expr {
             Binary(left, BangEqual, right) => left.evaluate(parser)?.ne(&right.evaluate(parser)?),
             Assign(Identifier(idnt_name), expr) => {
                 let value = expr.evaluate(parser)?;
-                match parser.vm.var_get(idnt_name) {
-                    Some(_) => {
-                        let mut obj = value.clone();
-                        obj.set_name(idnt_name.clone());
-                        parser.vm.var_add(obj);
-                        Ok(value)
-                    },
-                    _ => Err(format!("cannot find object named: {}", idnt_name)),
-                }
+                parser.vm.obj_set_if_exist(idnt_name.clone(), value)
             },
             left => {
                 Err(format!("NOT CHECKED TYPE: {:#?}", left))
@@ -204,6 +196,7 @@ impl Expr {
         }
     }
 
+    #[allow(dead_code)]
     pub fn synchronize(tks: &Vec<Token>, start: usize) -> usize {
         let mut idx: usize = 0;
         while let Some(tk) = tks.get(start + idx) {
