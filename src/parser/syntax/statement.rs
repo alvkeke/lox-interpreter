@@ -24,17 +24,21 @@ impl Stmt {
                 println!("{}", expr.evaluate(parser)?);
             },
             Stmt::Block(stmts) => {
-                println!("TODO:::: block exec: {:#?}", stmts);
-                todo!()
+                parser.vm.stack_new();
+                let mut iter = stmts.iter();
+                while let Some(stmt) = iter.next() {
+                    stmt.exec(parser)?;
+                }
+                parser.vm.stack_exit();
             }
             Stmt::Decl(Token::Identifier(idnt_name), expr) => {
                 match expr {
                     Some(expr) => {
                         let obj = expr.evaluate(parser)?;
-                        parser.vm.obj_set(idnt_name.clone(), obj);
+                        parser.vm.auto_obj_set(idnt_name.clone(), obj);
                     },
                     _ => {
-                        parser.vm.obj_set(idnt_name.clone(), Object::Nil);
+                        parser.vm.auto_obj_set(idnt_name.clone(), Object::Nil);
                     },
                 };
             },
