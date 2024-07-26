@@ -43,7 +43,7 @@ impl Stmt {
                 };
             },
             _ => {
-                return Err(format!("Unexpected statement"));
+                return Err("Unexpected statement".to_string());
             },
         }
         Ok(None)
@@ -66,7 +66,7 @@ impl Stmt {
             },
             Some(Token::LeftBrace) => Ok(Self::block(tks, start)?),
             Some(_) => Self::expr(tks, start),
-            None => Err(format!("Failed to get token from list")),
+            None => Err("Failed to get token from list".to_string()),
         }
     }
 
@@ -93,12 +93,12 @@ impl Stmt {
     pub fn decl(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
 
         if !matches!(tks.get(start), Some(Token::Var)) {
-            return Err(format!("not start with Token: Var"));
+            return Err("not start with Token: Var".to_string());
         }
         let mut ret_adv = 1;
         let idnt = tks.get(start + ret_adv);
         if matches!(idnt, None) {
-            return Err(format!("cannot get more tokens"));
+            return Err("cannot get more tokens".to_string());
         }
         let idnt = idnt.unwrap().clone();
         ret_adv += 1;
@@ -116,10 +116,10 @@ impl Stmt {
                         ret_adv += adv;
                         match tks.get(start + ret_adv) {
                             Some(Token::Semicolon) => Ok((Stmt::Decl(idnt, Some(expr)), ret_adv+1)),
-                            _ => Err(format!("failed to parse statement")),
+                            _ => Err("failed to parse statement".to_string()),
                         }
                     },
-                    _ => Err(format!("failed to parse expression")),
+                    _ => Err("failed to parse expression".to_string()),
                 }
             },
             tk => return Err(format!("unexpected token: {:#?}", tk)),
@@ -132,13 +132,13 @@ impl Stmt {
 
         match tks.get(start + adv) {
             Some(Token::Semicolon) => Ok((Stmt::Expr(expr), adv+1)),
-            tk => Err(format!("unexcepted token: {:#?}", tk)),
+            tk => Err(format!("unexpected token: {:#?}", tk)),
         }
     }
 
     pub fn print(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
         if !matches!(tks.get(start), Some(Token::Print)) {
-            return Err(format!("not start with Token: Print"));
+            return Err("not start with Token: Print".to_string());
         }
         let mut used_adv = 1;
 
@@ -147,7 +147,7 @@ impl Stmt {
 
         match tks.get(start + used_adv) {
             Some(Token::Semicolon) => Ok((Stmt::Print(expr), used_adv+1)),
-            tk => Err(format!("unexcepted token: {:#?}", tk)),
+            tk => Err(format!("unexpected token: {:#?}", tk)),
         }
 
     }

@@ -71,12 +71,12 @@ impl Expr {
         let mut ret_adv = 0;
         let idt = tks.get(start+ret_adv);
         if !matches!(idt, Some(Token::Identifier(_))) {
-            return Err(format!("Not start with Identifier"));
+            return Err("Not start with Identifier".to_string());
         }
         let idt = idt.unwrap();
         ret_adv+=1;
         if !matches!(tks.get(start+ ret_adv), Some(Token::Equal)) {
-            return Err(format!("missing token : Equal"));
+            return Err("missing token : Equal".to_string());
         }
         ret_adv+=1;
 
@@ -99,71 +99,71 @@ impl Expr {
 
     pub fn equality(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
         let (mut expr, adv) = Self::comparison(tks, start)?;
-        let mut addup_adv = adv;
+        let mut ret_adv = adv;
 
-        while let tk_op @ Some(Token::EqualEqual | Token::BangEqual) = tks.get(start + addup_adv) {
-            match Self::comparison(tks, start + addup_adv + 1) {
+        while let tk_op @ Some(Token::EqualEqual | Token::BangEqual) = tks.get(start + ret_adv) {
+            match Self::comparison(tks, start + ret_adv + 1) {
                 Err(_) => break,
                 Ok((right, adv)) => {
                     expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
-                    addup_adv += adv + 1;     // operation token                    
+                    ret_adv += adv + 1;     // operation token
                 },
             }
         }
 
-        Ok((expr, addup_adv))
+        Ok((expr, ret_adv))
     }
 
     pub fn comparison(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
         let (mut expr, adv) = Self::term(tks, start)?;
-        let mut addup_adv = adv;
+        let mut ret_adv = adv;
 
         while let tk_op @ Some(Token::Greater | Token::GreaterEqual 
-                        | Token::Less | Token::LessEqual) = tks.get(start + addup_adv) {
-            match Self::term(tks, start + addup_adv + 1) {
+                        | Token::Less | Token::LessEqual) = tks.get(start + ret_adv) {
+            match Self::term(tks, start + ret_adv + 1) {
                 Err(_) => break,
                 Ok((right, adv)) => {
                     expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
-                    addup_adv += adv + 1;     // operation token                    
+                    ret_adv += adv + 1;     // operation token
                 },
             }
         }
 
-        Ok((expr, addup_adv))
+        Ok((expr, ret_adv))
     }
 
     pub fn term(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
         let (mut expr, adv) = Self::factor(tks, start)?;
-        let mut addup_adv = adv;
+        let mut ret_adv = adv;
 
-        while let tk_op @ Some(Token::Minus | Token::Plus) = tks.get(start + addup_adv) {
-            match Self::factor(tks, start + addup_adv + 1) {
+        while let tk_op @ Some(Token::Minus | Token::Plus) = tks.get(start + ret_adv) {
+            match Self::factor(tks, start + ret_adv + 1) {
                 Err(_) => break,
                 Ok((right, adv)) => {
                     expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
-                    addup_adv += adv + 1;     // operation token                    
+                    ret_adv += adv + 1;     // operation token
                 },
             }
         }
 
-        Ok((expr, addup_adv))
+        Ok((expr, ret_adv))
     }
 
     pub fn factor(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
         let (mut expr, adv) = Self::unary(tks, start)?;
-        let mut addup_adv = adv;
+        let mut ret_adv = adv;
 
-        while let tk_op @ Some(Token::Slash | Token::Star) = tks.get(start + addup_adv) {
-            match Self::unary(tks, start + addup_adv + 1) {
+        while let tk_op @ Some(Token::Slash | Token::Star) = tks.get(start + ret_adv) {
+            match Self::unary(tks, start + ret_adv + 1) {
                 Err(_) => break,
                 Ok((right, adv)) => {
                     expr = Expr::Binary(Box::new(expr), tk_op.unwrap().clone(), Box::new(right));
-                    addup_adv += adv + 1;     // operation token                    
+                    ret_adv += adv + 1;     // operation token
                 },
             }
         }
 
-        Ok((expr, addup_adv))
+        Ok((expr, ret_adv))
     }
 
     pub fn unary(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
@@ -189,7 +189,7 @@ impl Expr {
                 if matches!(tks.get(start+adv+1), Some(Token::RightParen)) {
                     Ok((Expr::Group(Box::new(expr)), 2 + adv))  // L/R Paren + increased index(adv)
                 } else {
-                    Err(format!("cannot get close paren"))
+                    Err("cannot get close paren".to_string())
                 }
             },
             tk => Err(format!("unexpected token/status: {:#?}", tk)),
