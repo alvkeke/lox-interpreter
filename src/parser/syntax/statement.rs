@@ -1,4 +1,4 @@
-use crate::{parser::types::object::Object, parser::vm::LoxVM};
+use crate::parser::{types::object::Object, LoxParser};
 
 use super::{expression::Expr, token::Token};
 
@@ -14,18 +14,18 @@ pub enum Stmt{
 
 impl Stmt {
 
-    pub fn exec(&self, vm: &mut LoxVM) -> Result<Option<i32>, String> {
+    pub fn exec(&self, parser: &mut LoxParser) -> Result<Option<i32>, String> {
         match self {
             Stmt::Expr(expr) => {
-                println!("{}", expr.evaluate(vm)?);
+                println!("{}", expr.evaluate(parser)?);
             },
             Stmt::Print(expr) => {
-                println!("{}", expr.evaluate(vm)?);
+                println!("{}", expr.evaluate(parser)?);
             },
             Stmt::Decl(Token::Identifier(idnt_name), expr) => {
                 let new_obj = match expr {
                     Some(expr) => {
-                        let mut obj = expr.evaluate(vm)?;
+                        let mut obj = expr.evaluate(parser)?;
                         obj.set_name(idnt_name.clone());
                         obj
                     },
@@ -35,7 +35,7 @@ impl Stmt {
                         obj
                     },
                 };
-                vm.var_add(new_obj);
+                parser.vm.var_add(new_obj);
             },
             _ => {
                 return Err(format!("Unexpected statement"));

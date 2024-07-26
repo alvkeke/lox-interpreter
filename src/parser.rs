@@ -60,7 +60,7 @@ impl LoxParser {
     }
 
     pub fn exec_stmt(&mut self, stmt: Stmt) -> Result<(), String> {
-        stmt.exec(&mut self.vm)?;
+        stmt.exec(self)?;
         Ok(())
     }
 

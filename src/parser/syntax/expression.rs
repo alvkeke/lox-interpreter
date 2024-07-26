@@ -1,4 +1,4 @@
-use crate::{parser::syntax::token::Token, parser::types::object::Object, parser::vm::LoxVM};
+use crate::parser::{syntax::token::Token, types::object::Object, LoxParser};
 
 
 #[derive(Debug)]
@@ -13,7 +13,7 @@ pub enum Expr {
 
 impl Expr {
 
-    pub fn evaluate(&self, vm: &mut LoxVM) -> Result<Object, String> {
+    pub fn evaluate(&self, parser: &mut LoxParser) -> Result<Object, String> {
         use Expr::*;
         use Token::{*};
         match self {
@@ -24,34 +24,34 @@ impl Expr {
             Literal(String(str)) => Ok(Object::string_new(str.clone())),
             Literal(Number(num)) => Ok(Object::number_new(num.clone())),
             Literal(Identifier(idnt_name)) => {
-                match vm.var_get(idnt_name) {
+                match parser.vm.var_get(idnt_name) {
                     Some(oo) => Ok(oo.clone()),
                     None => Err(format!("object {} not found", idnt_name)),
                 }
             },
             // Unary expr
-            Unary(Bang, expr) => expr.evaluate(vm)?.not(),
-            Unary(Minus, expr) => expr.evaluate(vm)?.neg(),
+            Unary(Bang, expr) => expr.evaluate(parser)?.not(),
+            Unary(Minus, expr) => expr.evaluate(parser)?.neg(),
             // Group expr
-            Group(expr) => expr.evaluate(vm),
+            Group(expr) => expr.evaluate(parser),
             // Binary
-            Binary(left, Slash, right) => left.evaluate(vm)?.div(&right.evaluate(vm)?),
-            Binary(left, Star, right) => left.evaluate(vm)?.mul(&right.evaluate(vm)?),
-            Binary(left, Minus, right) => left.evaluate(vm)?.sub(&right.evaluate(vm)?),
-            Binary(left, Plus, right) => left.evaluate(vm)?.add(&right.evaluate(vm)?),
-            Binary(left, Greater, right) => left.evaluate(vm)?.gt(&right.evaluate(vm)?),
-            Binary(left, GreaterEqual, right) => left.evaluate(vm)?.ge(&right.evaluate(vm)?),
-            Binary(left, Less, right) => left.evaluate(vm)?.lt(&right.evaluate(vm)?),
-            Binary(left, LessEqual, right) => left.evaluate(vm)?.le(&right.evaluate(vm)?),
-            Binary(left, EqualEqual, right) => left.evaluate(vm)?.eq(&right.evaluate(vm)?),
-            Binary(left, BangEqual, right) => left.evaluate(vm)?.ne(&right.evaluate(vm)?),
+            Binary(left, Slash, right) => left.evaluate(parser)?.div(&right.evaluate(parser)?),
+            Binary(left, Star, right) => left.evaluate(parser)?.mul(&right.evaluate(parser)?),
+            Binary(left, Minus, right) => left.evaluate(parser)?.sub(&right.evaluate(parser)?),
+            Binary(left, Plus, right) => left.evaluate(parser)?.add(&right.evaluate(parser)?),
+            Binary(left, Greater, right) => left.evaluate(parser)?.gt(&right.evaluate(parser)?),
+            Binary(left, GreaterEqual, right) => left.evaluate(parser)?.ge(&right.evaluate(parser)?),
+            Binary(left, Less, right) => left.evaluate(parser)?.lt(&right.evaluate(parser)?),
+            Binary(left, LessEqual, right) => left.evaluate(parser)?.le(&right.evaluate(parser)?),
+            Binary(left, EqualEqual, right) => left.evaluate(parser)?.eq(&right.evaluate(parser)?),
+            Binary(left, BangEqual, right) => left.evaluate(parser)?.ne(&right.evaluate(parser)?),
             Assign(Identifier(idnt_name), expr) => {
-                let value = expr.evaluate(vm)?;
-                match vm.var_get(idnt_name) {
+                let value = expr.evaluate(parser)?;
+                match parser.vm.var_get(idnt_name) {
                     Some(_) => {
                         let mut obj = value.clone();
                         obj.set_name(idnt_name.clone());
-                        vm.var_add(obj);
+                        parser.vm.var_add(obj);
                         Ok(value)
                     },
                     _ => Err(format!("cannot find object named: {}", idnt_name)),
