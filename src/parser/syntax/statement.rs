@@ -11,6 +11,7 @@ pub enum Stmt{
     Expr(Expr),
     Print(Expr),
     If(Expr, Box<Stmt>, Option<Box<Stmt>>),
+    While(Expr, Box<Stmt>),
 }
 
 
@@ -19,7 +20,7 @@ impl Stmt {
     pub fn exec(&self, parser: &mut LoxParser) -> Result<Option<i32>, String> {
         match self {
             Stmt::Expr(expr) => {
-                println!("{}", expr.evaluate(parser)?);
+                expr.evaluate(parser)?;
             },
             Stmt::Print(expr) => {
                 println!("{}", expr.evaluate(parser)?);
@@ -50,6 +51,11 @@ impl Stmt {
                     },
                 };
             },
+            Stmt::While(cont, body) => {
+                while cont.evaluate(parser)?.is_true()? {
+                    body.exec(parser)?;
+                }
+            },
             _ => {
                 return Err("Unexpected statement".to_string());
             },
@@ -73,10 +79,34 @@ impl Stmt {
                 Ok((stmt, used))
             },
             Some(Token::If) => Ok(Self::ctrl_if(tks, start)?),
+            Some(Token::While) => Ok(Self::ctrl_while(tks, start)?),
             Some(Token::LeftBrace) => Ok(Self::block(tks, start)?),
             Some(_) => Self::expr(tks, start),
             None => Err("Failed to get token from list".to_string()),
         }
+    }
+
+    pub fn ctrl_while(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+        if !matches!(tks.get(start), Some(Token::While)) {
+            return Err("not start with Token: while".to_string());
+        }
+        let mut ret_adv = 1;
+        match tks.get(start + ret_adv) {
+            Some(Token::LeftParen) => ret_adv += 1,
+            tk => return Err(format!("expected (, but got {:#?}", tk)),
+        }
+
+        let (expr_cont, used) = Expr::expression(tks, start+ret_adv)?;
+        ret_adv += used;
+
+        match tks.get(start + ret_adv) {
+            Some(Token::RightParen) => ret_adv += 1,
+            tk => return Err(format!("expected ), but got {:#?}", tk)),
+        };
+        let (stmt_true, used) = Self::stmt(tks, start + ret_adv)?;
+        ret_adv += used;
+
+        Ok((Stmt::While(expr_cont, Box::new(stmt_true)), ret_adv))
     }
 
     pub fn ctrl_if(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {

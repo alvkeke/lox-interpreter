@@ -174,7 +174,8 @@ impl Expr {
                     Err("cannot get close paren".to_string())
                 }
             },
-            tk => Err(format!("unexpected token/status: {:#?}", tk)),
+            Some(tk) => Err(format!("unexpected token: {:#?}", tk)),
+            None => Err("unexpected status".to_string()),
         }
     }
 
