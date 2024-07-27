@@ -25,12 +25,12 @@ impl Stmt {
                 println!("{}", expr.evaluate(parser)?);
             },
             Stmt::Block(stmts) => {
-                parser.vm.stack_new();
+                parser.vm.stack_current().scope_enter();
                 let mut iter = stmts.iter();
                 while let Some(stmt) = iter.next() {
                     stmt.exec(parser)?;
                 }
-                parser.vm.stack_exit();
+                parser.vm.stack_current().scope_exit();
             }
             Stmt::If(cont, stmt_true, opt_false) => {
                 if cont.evaluate(parser)?.is_true()? {
@@ -43,10 +43,10 @@ impl Stmt {
                 match expr {
                     Some(expr) => {
                         let obj = expr.evaluate(parser)?;
-                        parser.vm.auto_obj_set(idnt_name.clone(), obj);
+                        parser.vm.var_add(idnt_name.clone(), obj);
                     },
                     _ => {
-                        parser.vm.auto_obj_set(idnt_name.clone(), Object::Nil);
+                        parser.vm.var_add(idnt_name.clone(), Object::Nil);
                     },
                 };
             },

@@ -4,7 +4,7 @@ use std::io::Write;
 
 use syntax::statement::Stmt;
 use syntax::token::Token;
-use vm::LoxVM;
+use vm::vm::LoxVM;
 
 
 mod syntax {
@@ -17,9 +17,14 @@ mod types {
     pub mod number;
 }
 
-mod vm;
+mod vm {
+    pub mod vm;
+    pub mod stack;
+    pub mod var_pool;
+}
 
 
+#[derive(Debug)]
 pub struct LoxParser {
     prompt: String,
     vm: LoxVM,
@@ -43,7 +48,7 @@ impl LoxParser {
 
     pub fn env_clear(&mut self) {
         self.tokens.clear();
-        self.vm.env_clear();
+        self.vm.clear();
     }
 
 }

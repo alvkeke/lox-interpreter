@@ -7,9 +7,9 @@ fn main() {
 
     let mut lox = LoxParser::new();
     test(&mut lox);
-    if let Err(msg) = lox.repl() {
-        eprintln!("failed to read line: {}", msg);
-    }
+    // if let Err(msg) = lox.repl() {
+    //     eprintln!("failed to read line: {}", msg);
+    // }
 
 }
 
@@ -17,7 +17,7 @@ fn main() {
 
 fn test(lox: &mut LoxParser) {
     let code = String::from("
-
+{{{
     {
         var n=\"n1\";
         print n;
@@ -73,11 +73,13 @@ fn test(lox: &mut LoxParser) {
     var n=5;
     if (n == 4 or n==5)
         print 111;
-
+}}}
     ");
 
     println!("{:#?}", lox.exec_line(&code));
 
+    dbg!(&lox);
     lox.env_clear();
+    dbg!(lox);
 }
 

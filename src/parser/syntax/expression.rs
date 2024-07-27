@@ -23,12 +23,7 @@ impl Expr {
             Literal(True) => Ok(Object::Boolean(true)),
             Literal(String(str)) => Ok(Object::String(str.clone())),
             Literal(Number(num)) => Ok(Object::Number(num.clone())),
-            Literal(Identifier(idnt_name)) => {
-                match parser.vm.auto_obj_get(idnt_name) {
-                    Some(oo) => Ok(oo.clone()),
-                    None => Err(format!("object {} not found", idnt_name)),
-                }
-            },
+            Literal(Identifier(idnt_name)) => Ok(parser.vm.var_get(idnt_name)?.clone()),
             // Unary expr
             Unary(Bang, expr) => expr.evaluate(parser)?.not(),
             Unary(Minus, expr) => expr.evaluate(parser)?.neg(),
@@ -49,7 +44,7 @@ impl Expr {
             Binary(left, Or, right) => left.evaluate(parser)?.logic_or(&right.evaluate(parser)?),
             Assign(Identifier(idnt_name), expr) => {
                 let value = expr.evaluate(parser)?;
-                parser.vm.auto_obj_set_if_exist(idnt_name.clone(), value)
+                parser.vm.var_set(idnt_name.clone(), value)
             },
             left => {
                 Err(format!("NOT CHECKED TYPE: {:#?}", left))
