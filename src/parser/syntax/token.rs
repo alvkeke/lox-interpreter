@@ -95,7 +95,7 @@ impl Clone for Token {
             Self::EOF => Self::EOF,
         }
     }
-    
+
     fn clone_from(&mut self, source: &Self) {
         *self = source.clone()
     }
@@ -116,26 +116,15 @@ impl PartialEq for Token {
     }
 }
 
-#[allow(dead_code)]
-fn scan_from_snap(snap: &String) -> Result<Vec<Token>, String> {
-    let mut result: Vec<Token> = Vec::new();
-    if let Err(msg) = scan_from_line(snap, &mut result) {
-        return Err(msg);
-    };
-
-    return Ok(result);
-}
-
-
 enum ParseType {
     Identifier,
     Number,
 }
 
-fn find_to_close(close_ch: char, str: &mut impl Iterator<Item = char>, out_buf: &mut String) -> Result<i32, String> {
+fn read_to_close(close_ch: char, str: &mut impl Iterator<Item = char>, out_buf: &mut String) -> Result<(), String> {
     while let Some(ch) = str.next() {
         if ch == close_ch {
-            return Ok(0);
+            return Ok(());
         }
         out_buf.push(ch);
     }
@@ -143,7 +132,7 @@ fn find_to_close(close_ch: char, str: &mut impl Iterator<Item = char>, out_buf: 
     return Err(format!("end without close mark: {}", close_ch));
 }
 
-pub fn scan_from_line(line: &String, list: &mut Vec<Token>) -> Result<i32, String> {
+pub fn scan_from_string(line: &String, list: &mut Vec<Token>) -> Result<(), String> {
 
     let mut parse_type = ParseType::Identifier;
     let mut string_buffer: String = String::new();
@@ -220,9 +209,7 @@ pub fn scan_from_line(line: &String, list: &mut Vec<Token>) -> Result<i32, Strin
         match (ch, peeked) {
             // None is not avaiable
             ('"', Some(_)) => {
-                if let Err(msg) = find_to_close(ch, &mut line_itr, buf) {
-                    return Err(msg);
-                }
+                read_to_close(ch, &mut line_itr, buf)?;
                 list.push(Token::String(buf.clone()));
                 buf.clear();
             },
@@ -267,6 +254,6 @@ pub fn scan_from_line(line: &String, list: &mut Vec<Token>) -> Result<i32, Strin
         };
     }
 
-    return Ok(0);
+    return Ok(());
 }
 

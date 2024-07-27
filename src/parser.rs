@@ -31,8 +31,8 @@ impl LoxParser {
     pub fn new() -> Self {
         let lox = LoxParser{
             prompt: String::from(">> "),
-            vm: LoxVM::new(), 
-            tokens: Vec::new() 
+            vm: LoxVM::new(),
+            tokens: Vec::new()
         };
 
         lox
@@ -43,14 +43,14 @@ impl LoxParser {
 impl LoxParser {
 
     #[allow(dead_code)]
-    pub fn parse_token_clear(&mut self, code: &String) -> Result<i32, String> {
+    pub fn parse_token_clear(&mut self, code: &String) -> Result<(), String> {
         self.tokens.clear();
-        syntax::token::scan_from_line(code, &mut self.tokens)
+        syntax::token::scan_from_string(code, &mut self.tokens)
     }
 
     #[allow(dead_code)]
-    pub fn parse_token_append(&mut self, code: &String) -> Result<i32, String> {
-        syntax::token::scan_from_line(code, &mut self.tokens)
+    pub fn parse_token_append(&mut self, code: &String) -> Result<(), String> {
+        syntax::token::scan_from_string(code, &mut self.tokens)
     }
 
     pub fn parse_stmt(&mut self) -> Result<Stmt, String> {
@@ -77,7 +77,6 @@ impl LoxParser {
 // REPL
 impl LoxParser {
 
-
     fn is_break_cmd(cmd: &String) -> bool {
         if let Ordering::Equal = cmd.trim().cmp(".q") {
             true
@@ -86,30 +85,29 @@ impl LoxParser {
         }
     }
 
-    pub fn repl(&mut self) -> bool {
+    pub fn exec_line(&mut self, line: &String) -> Result<(), String>{
+        self.parse_token_clear(line)?;
+        self.exec_stmt_all_available()
+    }
+
+    pub fn repl(&mut self) -> Result<(), String> {
         let stdin = io::stdin();
-    
+
         let mut line = String::new();
         loop {
             self.prompt_disp();
             line.clear();
             if let Err(msg) = stdin.read_line(&mut line) {
-                eprintln!("failed to read line: {}", msg);
-                return false;
+                return Err(msg.to_string());
             }
             if Self::is_break_cmd(&line) {
-                return true;
+                return Ok(());
             }
-            if let Err(msg) = self.parse_token_clear(&line) {
-                eprintln!("{}", msg);
-                continue;
-            }
-
-            if let Err(msg) = self.exec_stmt_all_available() {
-                eprintln!("{}", msg);
+            match self.exec_line(&line) {
+                Err(msg) => eprintln!("{}", msg),
+                _=>{},
             }
         }
-
     }
 
 }
@@ -129,6 +127,6 @@ impl LoxParser {
     pub fn prompt_disp(&self) {
         print!("{}", self.prompt);
         io::stdout().flush().unwrap();
-    }    
+    }
 }
 

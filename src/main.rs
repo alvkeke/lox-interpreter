@@ -6,6 +6,8 @@ use parser::LoxParser;
 fn main() {
 
     let mut lox = LoxParser::new();
-    lox.repl();
+    if let Err(msg) = lox.repl() {
+        eprintln!("failed to read line: {}", msg);
+    }
 
 }
