@@ -10,6 +10,7 @@ pub enum Stmt{
     Decl(Token, Option<Expr>),
     Expr(Expr),
     Print(Expr),
+    If(Expr, Box<Stmt>, Option<Box<Stmt>>),
 }
 
 
@@ -31,6 +32,13 @@ impl Stmt {
                 }
                 parser.vm.stack_exit();
             }
+            Stmt::If(cont, stmt_true, opt_false) => {
+                if cont.evaluate(parser)?.is_true()? {
+                    stmt_true.exec(parser)?;
+                } else if let Some(stmt_false) = opt_false {
+                    stmt_false.exec(parser)?;
+                }
+            },
             Stmt::Decl(Token::Identifier(idnt_name), expr) => {
                 match expr {
                     Some(expr) => {
@@ -64,9 +72,43 @@ impl Stmt {
                 let (stmt, used) = Self::decl(tks, start)?;
                 Ok((stmt, used))
             },
+            Some(Token::If) => Ok(Self::ctrl_if(tks, start)?),
             Some(Token::LeftBrace) => Ok(Self::block(tks, start)?),
             Some(_) => Self::expr(tks, start),
             None => Err("Failed to get token from list".to_string()),
+        }
+    }
+
+    pub fn ctrl_if(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+        if !matches!(tks.get(start), Some(Token::If)) {
+            return Err("not start with Token: if".to_string());
+        }
+        let mut ret_adv = 1;
+        match tks.get(start + ret_adv) {
+            Some(Token::LeftParen) => ret_adv += 1,
+            tk => return Err(format!("expected (, but got {:#?}", tk)),
+        }
+
+        let (expr_cont, used) = Expr::expression(tks, start+ret_adv)?;
+        ret_adv += used;
+
+        match tks.get(start + ret_adv) {
+            Some(Token::RightParen) => ret_adv += 1,
+            tk => return Err(format!("expected ), but got {:#?}", tk)),
+        }
+
+        let (stmt_true, used) = Self::stmt(tks, start + ret_adv)?;
+        ret_adv += used;
+
+        match tks.get(start+ret_adv) {
+            Some(Token::Else) => {
+                let (stmt_false, used) = Self::stmt(tks, start+ret_adv+1)?;
+                ret_adv += used + 1;
+                Ok((Stmt::If(expr_cont, Box::new(stmt_true), Some(Box::new(stmt_false))), ret_adv))
+            },
+            _ => {
+                Ok((Stmt::If(expr_cont, Box::new(stmt_true), None), ret_adv))
+            }
         }
     }
 
@@ -102,7 +144,7 @@ impl Stmt {
         }
         let idnt = idnt.unwrap().clone();
         ret_adv += 1;
-        
+
         match tks.get(start + ret_adv) {
             Some(Token::Semicolon) => {
                 // just return if end with `;'

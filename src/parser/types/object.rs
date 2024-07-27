@@ -35,6 +35,19 @@ impl Display for Object {
 }
 
 impl Object {
+
+    pub fn is_true(&self) -> Result<bool, String> {
+        match self {
+            Self::Boolean(b) => Ok(*b),
+            Self::Nil => Ok(false),
+            _ => Err("not a Boolean value".to_string()),
+        }
+    }
+
+}
+
+
+impl Object {
     pub fn not(&self) -> Result<Self, String> {
         use Object::{Boolean, Nil};
         match self {
@@ -117,7 +130,7 @@ impl Object {
             _ => Ok(Object::Boolean(false)),
         }
     }
-    
+
     pub fn ne(&self, other: &Self) -> Result<Self, String> {
         use Object::Boolean;
         match self.eq(other)? {
