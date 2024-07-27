@@ -100,16 +100,14 @@ impl Stmt {
         let (stmt_true, used) = Self::stmt(tks, start + ret_adv)?;
         ret_adv += used;
 
-        match tks.get(start+ret_adv) {
-            Some(Token::Else) => {
-                let (stmt_false, used) = Self::stmt(tks, start+ret_adv+1)?;
-                ret_adv += used + 1;
-                Ok((Stmt::If(expr_cont, Box::new(stmt_true), Some(Box::new(stmt_false))), ret_adv))
-            },
-            _ => {
-                Ok((Stmt::If(expr_cont, Box::new(stmt_true), None), ret_adv))
-            }
+        let mut opt_false = None;
+        if let Some(Token::Else) = tks.get(start+ret_adv) {
+            let (stmt_false, used) = Self::stmt(tks, start+ret_adv+1)?;
+            ret_adv += used + 1;
+            opt_false = Some(Box::new(stmt_false));
         }
+        Ok((Stmt::If(expr_cont, Box::new(stmt_true), opt_false), ret_adv))
+
     }
 
     pub fn block(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
