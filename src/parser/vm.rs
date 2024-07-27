@@ -18,14 +18,14 @@ impl LoxVM {
 
 
     pub fn auto_obj_set(&mut self, name: String, obj: Object) {
-        match self.stacks.len() {
+        match self.stack_deep() {
             0 => self.global_obj_set(name, obj),
             _ => self.stack_obj_set(name, obj),
         }
     }
 
     pub fn auto_obj_set_if_exist(&mut self, name: String, obj: Object) -> Result<Object, String> {
-        match self.stacks.len() {
+        match self.stack_deep() {
             0 => self.global_obj_set_if_exist(name, obj),
             _ => {
                 if self.stack_obj_exist(&name) {
@@ -39,7 +39,7 @@ impl LoxVM {
 
     #[allow(dead_code)]
     fn auto_obj_pop(&mut self, name: String) -> Option<Object> {
-        match self.stacks.len() {
+        match self.stack_deep() {
             0 => self.global_obj_pop(name),
             _ => {
                 if self.stack_obj_exist(&name) {
@@ -52,7 +52,7 @@ impl LoxVM {
     }
 
     pub fn auto_obj_get(&mut self, name: &String) -> Option<&mut Object> {
-        match self.stacks.len() {
+        match self.stack_deep() {
             0 => self.global_obj_get(name),
             _ => {
                 if self.stack_obj_exist(name) {
