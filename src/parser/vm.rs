@@ -16,6 +16,14 @@ impl LoxVM {
         }
     }
 
+    pub fn env_clear(&mut self) {
+        self.global_objs.clear();
+        self.stacks.clear();
+    }
+}
+
+
+impl LoxVM {
 
     pub fn auto_obj_set(&mut self, name: String, obj: Object) {
         match self.stack_deep() {

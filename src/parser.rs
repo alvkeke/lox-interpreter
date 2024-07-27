@@ -39,6 +39,15 @@ impl LoxParser {
     }
 }
 
+impl LoxParser {
+
+    pub fn env_clear(&mut self) {
+        self.tokens.clear();
+        self.vm.env_clear();
+    }
+
+}
+
 // Parser related
 impl LoxParser {
 
