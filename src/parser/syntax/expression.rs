@@ -45,6 +45,10 @@ impl Expr {
             Binary(left, LessEqual, right) => left.evaluate(parser)?.le(&right.evaluate(parser)?),
             Binary(left, EqualEqual, right) => left.evaluate(parser)?.eq(&right.evaluate(parser)?),
             Binary(left, BangEqual, right) => left.evaluate(parser)?.ne(&right.evaluate(parser)?),
+            Binary(left, And, right) =>
+                    Ok(Object::Boolean(left.evaluate(parser)?.is_true()? && right.evaluate(parser)?.is_true()?)),
+            Binary(left, Or, right) =>
+                    Ok(Object::Boolean(left.evaluate(parser)?.is_true()? || right.evaluate(parser)?.is_true()?)),
             Assign(Identifier(idnt_name), expr) => {
                 let value = expr.evaluate(parser)?;
                 parser.vm.auto_obj_set_if_exist(idnt_name.clone(), value)
@@ -63,7 +67,7 @@ impl Expr {
         if let Ok(ret) = Self::assign(tks, start) {
             Ok(ret)
         } else {
-            Self::equality(tks, start)
+            Self::logic_or(tks, start)
         }
     }
 
@@ -122,6 +126,16 @@ impl Expr {
         Ok((expr, ret_adv))
     }
 
+    const LOGIC_OR_OPS: [Token; 1] = [Token::Or];
+    pub fn logic_or(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+        Self::binary_common(tks, start, Self::logic_and, &Self::LOGIC_OR_OPS)
+    }
+
+    const LOGIC_AND_OPS: [Token; 1] = [Token::And];
+    pub fn logic_and(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+        Self::binary_common(tks, start, Self::equality, &Self::LOGIC_AND_OPS)
+    }
+
     const EQUALITY_OPS: [Token; 2] = [Token::EqualEqual, Token::BangEqual];
     pub fn equality(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
         Self::binary_common(tks, start, Self::comparison, &Self::EQUALITY_OPS)
@@ -145,7 +159,7 @@ impl Expr {
         match tks.get(start) {
             tk_op @ Some(Token::Bang | Token::Minus) => {
                 let (expr, adv) = Self::unary(tks, start+1)?;
-                Ok((Expr::Unary(tk_op.unwrap().clone(), Box::new(expr)), 1+adv))      // !/- + 
+                Ok((Expr::Unary(tk_op.unwrap().clone(), Box::new(expr)), 1+adv))      // !/- +
             },
             _ => {
                 Self::primary(tks, start)
@@ -178,7 +192,7 @@ impl Expr {
             match tk {
                 Token::Semicolon => return idx+1,
                 Token::Class | Token::Fun |
-                    Token::Var | Token::For | Token::If | 
+                    Token::Var | Token::For | Token::If |
                     Token::While | Token::Print | Token::Return => return idx,
                     _=>{},
             }
