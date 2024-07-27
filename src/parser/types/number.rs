@@ -9,16 +9,18 @@ use std::{cmp::Ordering, fmt::Display, ops::{self, Neg}};
 
 use Number::{*};
 
+use crate::dbg_format;
+
 impl Number {
     pub fn from(str: &str) -> Result<Number, String> {
         if str.contains('.') {
             match str.parse::<f64>() {
-                Err(ex) => Err(ex.to_string()),
+                Err(ex) => Err(dbg_format!("{}", ex)),
                 Ok(d) => Ok(Number::Decimal(d)),
             }
         } else {
             match str.parse::<i64>() {
-                Err(ex) => Err(ex.to_string()),
+                Err(ex) => Err(dbg_format!("{}", ex)),
                 Ok(d) => Ok(Number::Integer(d)),
             }
         }
@@ -144,7 +146,7 @@ impl Number {
 
     pub fn div_ref(&self, rhs: &Self) -> Result<Number, String> {
         if rhs.is_zero() {
-            return Err(format!("cannot divide by Zero: {} / {}", self, rhs));
+            return Err(dbg_format!("cannot divide by Zero: {} / {}", self, rhs));
         }
         match (self, rhs) {
             (Integer(ii), Integer(jj)) => {
@@ -180,19 +182,19 @@ impl PartialOrd for Number {
             }
         }
     }
-    
+
     fn lt(&self, other: &Self) -> bool {
         std::matches!(self.partial_cmp(other), Some(Ordering::Less))
     }
-    
+
     fn le(&self, other: &Self) -> bool {
         std::matches!(self.partial_cmp(other), Some(Ordering::Less | Ordering::Equal))
     }
-    
+
     fn gt(&self, other: &Self) -> bool {
         std::matches!(self.partial_cmp(other), Some(Ordering::Greater))
     }
-    
+
     fn ge(&self, other: &Self) -> bool {
         std::matches!(self.partial_cmp(other), Some(Ordering::Greater | Ordering::Equal))
     }
@@ -215,7 +217,7 @@ impl PartialEq for Number {
             }
         }
     }
-    
+
     fn ne(&self, other: &Self) -> bool {
         !self.eq(other)
     }

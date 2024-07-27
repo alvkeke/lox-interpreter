@@ -1,4 +1,4 @@
-use crate::parser::types::object::Object;
+use crate::{dbg_format, parser::types::object::Object};
 
 use super::var_pool::VmVarPool;
 
@@ -45,7 +45,7 @@ impl VmStack {
                 return Ok(scope);
             }
         }
-        Err(format!("cannot find object named: {}", name))
+        Err(dbg_format!("cannot find object named: {}", name))
     }
 
     /**

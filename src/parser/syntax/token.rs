@@ -1,5 +1,5 @@
 
-use crate::parser::types::number::Number;
+use crate::{dbg_format, parser::types::number::Number};
 
 #[derive(Debug)]
 pub enum Token {
@@ -129,7 +129,7 @@ fn read_to_close(close_ch: char, str: &mut impl Iterator<Item = char>, out_buf: 
         out_buf.push(ch);
     }
 
-    return Err(format!("end without close mark: {}", close_ch));
+    return Err(dbg_format!("end without close mark: {}", close_ch));
 }
 
 pub fn scan_from_string(line: &String, list: &mut Vec<Token>) -> Result<(), String> {
@@ -171,7 +171,7 @@ pub fn scan_from_string(line: &String, list: &mut Vec<Token>) -> Result<(), Stri
             list.push(match parse_type {
                 ParseType::Number => {
                     if label_new.ends_with('.') {
-                        return Err(format!("wrong number string get: {}", label_new));
+                        return Err(dbg_format!("wrong number string get: {}", label_new));
                     }
                     match Number::from(label_new.as_str()) {
                         Ok(num) => Token::Number(num),
@@ -249,7 +249,7 @@ pub fn scan_from_string(line: &String, list: &mut Vec<Token>) -> Result<(), Stri
             }
 
             (_, _) => {
-                return Err(format!("encounter unepxected char: {}, next: {:#?}", ch, peeked));
+                return Err(dbg_format!("encounter unepxected char: {}, next: {:#?}", ch, peeked));
             },
         };
     }

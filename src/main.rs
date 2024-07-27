@@ -20,19 +20,55 @@ fn test(lox: &mut LoxParser) {
     println!("{:#?}", lox.exec_line(&CODE_SCOPE.to_string()));
     println!("{:#?}", lox.exec_line(&CODE_IF.to_string()));
     println!("{:#?}", lox.exec_line(&CODE_WHILE.to_string()));
+    println!("{:#?}", lox.exec_line(&CODE_FOR.to_string()));
 
     dbg!(&lox);
     lox.env_clear();
     dbg!(lox);
 }
 
+const CODE_FOR: &str = "
+var temp;
+var a = 0;
+for (var b=1; a < 10000; b = temp + b) {
+  print a;
+  temp = a;
+  a = b;
+}
+print \"=========================\";
+var a = 0;
+var b = 1;
+for (b = 1; a < 10000; b = temp + b) {
+  print a;
+  temp = a;
+  a = b;
+}
+print \"=========================\";
+var a = 0;
+var b = 1;
+for (;a < 10000;) {
+    print a;
+    temp = a;
+    a = b;
+    b = temp + b;
+}
+";
+
 
 const CODE_WHILE: &str = "
-    var n = 0;
-    while (n<5) {
-        print n;
-        n = n+1;
-    }
+var n = 0;
+while (n<5) {
+    print n;
+    n = n+1;
+}
+
+{
+  var i = 0;
+  while (i < 10) {
+    print i;
+    i = i + 1;
+  }
+}
 ";
 
 const CODE_IF: &str = "

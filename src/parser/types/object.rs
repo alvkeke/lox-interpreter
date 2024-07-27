@@ -1,6 +1,8 @@
 
 use std::fmt::Display;
 
+use crate::dbg_format;
+
 use super::number::Number;
 
 
@@ -40,7 +42,7 @@ impl Object {
         match self {
             Self::Boolean(b) => Ok(*b),
             Self::Nil => Ok(false),
-            _ => Err("not a Boolean value".to_string()),
+            _ => Err(dbg_format!("not a Boolean value")),
         }
     }
 
@@ -61,14 +63,14 @@ impl Object {
         match self {
             Boolean(bool) => Ok(Object::Boolean(!bool)),
             Nil => Ok(Object::Boolean(false)),   // treat Nil as `false`
-            _ => Err(format!("not supported operation `Not(!)' on {:#?}", self))
+            _ => Err(dbg_format!("not supported operation `Not(!)' on {:#?}", self))
         }
     }
 
     pub fn neg(&self) -> Result<Self, String> {
         match self {
             Object::Number(num) => Ok(Object::Number(-num.clone())),
-            _ => Err(format!("not supported operation `Not(!)' on {:#?}", self))
+            _ => Err(dbg_format!("not supported operation `Not(!)' on {:#?}", self))
         }
     }
 
@@ -87,7 +89,7 @@ impl Object {
             (String(arg1), Number(arg2)) => {
                 Ok(Object::String(format!("{}{}", arg1, arg2)))
             },
-            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, rhs)),
+            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
     }
 
@@ -97,7 +99,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::Number(arg1.sub_ref(arg2)?))
             },
-            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, rhs)),
+            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
     }
 
@@ -107,7 +109,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::Number(arg1.mul_ref(arg2)?))
             },
-            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, rhs)),
+            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
     }
 
@@ -117,7 +119,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::Number(arg1.div_ref(arg2)?))
             },
-            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, rhs)),
+            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
     }
 
@@ -153,7 +155,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::Boolean(arg1 < arg2))
             },
-            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, other)),
+            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, other)),
         }
     }
 
@@ -163,7 +165,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::Boolean(arg1 <= arg2))
             },
-            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, other)),
+            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, other)),
         }
     }
 
@@ -173,7 +175,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::Boolean(arg1 > arg2))
             },
-            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, other)),
+            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, other)),
         }
     }
 
@@ -183,7 +185,7 @@ impl Object {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::Boolean(arg1 >= arg2))
             },
-            _ => Err(format!("object type not allowed {:#?} == {:#?}", self, other)),
+            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, other)),
         }
     }
 

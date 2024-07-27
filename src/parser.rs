@@ -6,6 +6,27 @@ use syntax::statement::Stmt;
 use syntax::token::Token;
 use vm::vm::LoxVM;
 
+use crate::dbg_format;
+
+#[macro_export]
+macro_rules! dbg_format {
+    ($fmt:expr) => {{
+        format!(
+            "[{}:{}] {}",
+            file!(),
+            line!(),
+            $fmt
+        )
+    }};
+    ($fmt:expr, $($arg:tt)*) => {{
+        format!(
+            "[{}:{}] {}",
+            file!(),
+            line!(),
+            format!($fmt, $($arg)*)
+        )
+    }};
+}
 
 mod syntax {
     pub mod token;
@@ -112,7 +133,7 @@ impl LoxParser {
             self.prompt_disp();
             line.clear();
             if let Err(msg) = stdin.read_line(&mut line) {
-                return Err(msg.to_string());
+                return Err(dbg_format!("{}", msg));
             }
             if Self::is_break_cmd(&line) {
                 return Ok(());

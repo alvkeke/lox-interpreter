@@ -1,4 +1,4 @@
-use crate::parser::{syntax::token::Token, types::object::Object, LoxParser};
+use crate::{dbg_format, parser::{syntax::token::Token, types::object::Object, LoxParser}};
 
 
 #[derive(Debug)]
@@ -47,7 +47,7 @@ impl Expr {
                 parser.vm.var_set(idnt_name.clone(), value)
             },
             left => {
-                Err(format!("NOT CHECKED TYPE: {:#?}", left))
+                Err(dbg_format!("NOT CHECKED TYPE: {:#?}", left))
             },
         }
     }
@@ -68,12 +68,12 @@ impl Expr {
         let mut ret_adv = 0;
         let idt = tks.get(start+ret_adv);
         if !matches!(idt, Some(Token::Identifier(_))) {
-            return Err("Not start with Identifier".to_string());
+            return Err(dbg_format!("Not start with Identifier"));
         }
         let idt = idt.unwrap();
         ret_adv+=1;
         if !matches!(tks.get(start+ ret_adv), Some(Token::Equal)) {
-            return Err("missing token : Equal".to_string());
+            return Err(dbg_format!("missing token : Equal"));
         }
         ret_adv+=1;
 
@@ -171,11 +171,11 @@ impl Expr {
                 if matches!(tks.get(start+adv+1), Some(Token::RightParen)) {
                     Ok((Expr::Group(Box::new(expr)), 2 + adv))  // L/R Paren + increased index(adv)
                 } else {
-                    Err("cannot get close paren".to_string())
+                    Err(dbg_format!("cannot get close paren"))
                 }
             },
-            Some(tk) => Err(format!("unexpected token: {:#?}", tk)),
-            None => Err("unexpected status".to_string()),
+            Some(tk) => Err(dbg_format!("unexpected token: {:#?}", tk)),
+            None => Err(dbg_format!("unexpected status")),
         }
     }
 

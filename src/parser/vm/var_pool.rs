@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::parser::types::object::Object;
+use crate::{dbg_format, parser::types::object::Object};
 
 #[derive(Debug)]
 pub struct VmVarPool {
@@ -43,7 +43,7 @@ impl VmVarPool {
                 Ok(obj)
             },
             false => {
-                Err(format!("cannot find object named: {}", name))
+                Err(dbg_format!("cannot find object named: {}", name))
             }
         }
     }
@@ -58,7 +58,7 @@ impl VmVarPool {
     pub fn var_pop(&mut self, name: &String) -> Result<Object, String> {
         match self.pool.remove(name) {
             Some(obj) => Ok(obj),
-            None => Err(format!("cannot find object named: {}", name)),
+            None => Err(dbg_format!("cannot find object named: {}", name)),
         }
     }
 
@@ -72,7 +72,7 @@ impl VmVarPool {
     pub fn var_get(&mut self, name: &String) -> Result<&mut Object, String> {
         match self.pool.get_mut(name) {
             Some(obj) => Ok(obj),
-            None => Err(format!("cannot find object named: {}", name)),
+            None => Err(dbg_format!("cannot find object named: {}", name)),
         }
     }
 
