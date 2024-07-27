@@ -44,6 +44,14 @@ impl Object {
         }
     }
 
+    pub fn logic_and(&self, right: &Object) -> Result<Object, String> {
+        Ok(Object::Boolean(self.is_true()? && right.is_true()?))
+    }
+
+    pub fn logic_or(&self, right: &Object) -> Result<Object, String> {
+        Ok(Object::Boolean(self.is_true()? || right.is_true()?))
+    }
+
 }
 
 

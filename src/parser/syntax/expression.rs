@@ -45,10 +45,8 @@ impl Expr {
             Binary(left, LessEqual, right) => left.evaluate(parser)?.le(&right.evaluate(parser)?),
             Binary(left, EqualEqual, right) => left.evaluate(parser)?.eq(&right.evaluate(parser)?),
             Binary(left, BangEqual, right) => left.evaluate(parser)?.ne(&right.evaluate(parser)?),
-            Binary(left, And, right) =>
-                    Ok(Object::Boolean(left.evaluate(parser)?.is_true()? && right.evaluate(parser)?.is_true()?)),
-            Binary(left, Or, right) =>
-                    Ok(Object::Boolean(left.evaluate(parser)?.is_true()? || right.evaluate(parser)?.is_true()?)),
+            Binary(left, And, right) => left.evaluate(parser)?.logic_and(&right.evaluate(parser)?),
+            Binary(left, Or, right) => left.evaluate(parser)?.logic_or(&right.evaluate(parser)?),
             Assign(Identifier(idnt_name), expr) => {
                 let value = expr.evaluate(parser)?;
                 parser.vm.auto_obj_set_if_exist(idnt_name.clone(), value)
