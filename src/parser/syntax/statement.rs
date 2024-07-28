@@ -27,12 +27,12 @@ impl Stmt {
                 println!("{}", expr.evaluate(parser)?);
             },
             Stmt::Block(stmts) => {
-                parser.vm.stack_current().scope_enter();
+                parser.vm.block_enter();
                 let mut iter = stmts.iter();
                 while let Some(stmt) = iter.next() {
                     stmt.exec(parser)?;
                 }
-                parser.vm.stack_current().scope_exit();
+                parser.vm.block_exit();
             }
             Stmt::If(cont, stmt_true, opt_false) => {
                 if cont.evaluate(parser)?.is_true()? {
@@ -58,6 +58,7 @@ impl Stmt {
                 }
             },
             Stmt::For(start, cont, every, body) => {
+                parser.vm.block_enter();
                 if let Some(start) = start {
                     start.exec(parser)?;
                 }
@@ -73,6 +74,7 @@ impl Stmt {
                         every.evaluate(parser)?;
                     }
                 }
+                parser.vm.block_exit();
             },
             _ => {
                 return Err(dbg_format!("Unexpected statement"));

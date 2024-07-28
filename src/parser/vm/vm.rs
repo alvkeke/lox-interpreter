@@ -85,5 +85,12 @@ impl LoxVM {
         self.stack_current().var_get(name)
     }
 
+    pub fn block_enter(&mut self) {
+        self.stack_current().scope_enter()
+    }
+
+    pub fn block_exit(&mut self) {
+        self.stack_current().scope_exit()
+    }
 
 }
