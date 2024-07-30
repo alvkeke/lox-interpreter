@@ -23,7 +23,7 @@ fn test(lox: &mut LoxParser) {
     println!("{:#?}", lox.exec_line(&CODE_FOR.to_string()));
 
     dbg!(&lox);
-    lox.env_clear();
+    lox.clear();
     dbg!(lox);
 }
 

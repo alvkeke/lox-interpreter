@@ -18,63 +18,63 @@ pub enum Stmt{
 
 impl Stmt {
 
-    pub fn exec(&self, parser: &mut LoxParser) -> Result<Option<i32>, String> {
+    pub fn exec(&self, vm: &mut LoxParser) -> Result<Option<i32>, String> {
         match self {
             Stmt::Expr(expr) => {
-                expr.evaluate(parser)?;
+                expr.evaluate(vm)?;
             },
             Stmt::Print(expr) => {
-                println!("{}", expr.evaluate(parser)?);
+                println!("{}", expr.evaluate(vm)?);
             },
             Stmt::Block(stmts) => {
-                parser.vm.block_enter();
+                vm.block_enter();
                 let mut iter = stmts.iter();
                 while let Some(stmt) = iter.next() {
-                    stmt.exec(parser)?;
+                    stmt.exec(vm)?;
                 }
-                parser.vm.block_exit();
+                vm.block_exit();
             }
             Stmt::If(cont, stmt_true, opt_false) => {
-                if cont.evaluate(parser)?.is_true()? {
-                    stmt_true.exec(parser)?;
+                if cont.evaluate(vm)?.is_true()? {
+                    stmt_true.exec(vm)?;
                 } else if let Some(stmt_false) = opt_false {
-                    stmt_false.exec(parser)?;
+                    stmt_false.exec(vm)?;
                 }
             },
             Stmt::Decl(Token::Identifier(idnt_name), expr) => {
                 match expr {
                     Some(expr) => {
-                        let obj = expr.evaluate(parser)?;
-                        parser.vm.var_add(idnt_name.clone(), obj);
+                        let obj = expr.evaluate(vm)?;
+                        vm.var_add(idnt_name.clone(), obj);
                     },
                     _ => {
-                        parser.vm.var_add(idnt_name.clone(), Object::Nil);
+                        vm.var_add(idnt_name.clone(), Object::Nil);
                     },
                 };
             },
             Stmt::While(cont, body) => {
-                while cont.evaluate(parser)?.is_true()? {
-                    body.exec(parser)?;
+                while cont.evaluate(vm)?.is_true()? {
+                    body.exec(vm)?;
                 }
             },
             Stmt::For(start, cont, every, body) => {
-                parser.vm.block_enter();
+                vm.block_enter();
                 if let Some(start) = start {
-                    start.exec(parser)?;
+                    start.exec(vm)?;
                 }
                 loop {
                     if let Some(cont) = cont {
-                        if !cont.evaluate(parser)?.is_true()? {
+                        if !cont.evaluate(vm)?.is_true()? {
                             break;
                         }
                     }
-                    body.exec(parser)?;
+                    body.exec(vm)?;
 
                     if let Some(every) = every {
-                        every.evaluate(parser)?;
+                        every.evaluate(vm)?;
                     }
                 }
-                parser.vm.block_exit();
+                vm.block_exit();
             },
             _ => {
                 return Err(dbg_format!("Unexpected statement"));
