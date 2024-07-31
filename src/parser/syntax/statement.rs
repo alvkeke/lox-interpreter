@@ -1,4 +1,4 @@
-use crate::{dbg_format, parser::{types::object::Object, LoxParser}};
+use crate::dbg_format;
 
 use super::{expression::Expr, token::Token};
 
@@ -13,76 +13,6 @@ pub enum Stmt{
     If(Expr, Box<Stmt>, Option<Box<Stmt>>),
     While(Expr, Box<Stmt>),
     For(Option<Box<Stmt>>, Option<Expr>, Option<Expr>, Box<Stmt>),
-}
-
-
-impl Stmt {
-
-    pub fn exec(&self, vm: &mut LoxParser) -> Result<Option<i32>, String> {
-        match self {
-            Stmt::Expr(expr) => {
-                expr.evaluate(vm)?;
-            },
-            Stmt::Print(expr) => {
-                println!("{}", expr.evaluate(vm)?);
-            },
-            Stmt::Block(stmts) => {
-                vm.block_enter();
-                let mut iter = stmts.iter();
-                while let Some(stmt) = iter.next() {
-                    stmt.exec(vm)?;
-                }
-                vm.block_exit();
-            }
-            Stmt::If(cont, stmt_true, opt_false) => {
-                if cont.evaluate(vm)?.is_true()? {
-                    stmt_true.exec(vm)?;
-                } else if let Some(stmt_false) = opt_false {
-                    stmt_false.exec(vm)?;
-                }
-            },
-            Stmt::Decl(Token::Identifier(idnt_name), expr) => {
-                match expr {
-                    Some(expr) => {
-                        let obj = expr.evaluate(vm)?;
-                        vm.var_add(idnt_name.clone(), obj);
-                    },
-                    _ => {
-                        vm.var_add(idnt_name.clone(), Object::Nil);
-                    },
-                };
-            },
-            Stmt::While(cont, body) => {
-                while cont.evaluate(vm)?.is_true()? {
-                    body.exec(vm)?;
-                }
-            },
-            Stmt::For(start, cont, every, body) => {
-                vm.block_enter();
-                if let Some(start) = start {
-                    start.exec(vm)?;
-                }
-                loop {
-                    if let Some(cont) = cont {
-                        if !cont.evaluate(vm)?.is_true()? {
-                            break;
-                        }
-                    }
-                    body.exec(vm)?;
-
-                    if let Some(every) = every {
-                        every.evaluate(vm)?;
-                    }
-                }
-                vm.block_exit();
-            },
-            _ => {
-                return Err(dbg_format!("Unexpected statement"));
-            },
-        }
-        Ok(None)
-    }
-
 }
 
 

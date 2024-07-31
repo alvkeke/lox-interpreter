@@ -1,4 +1,4 @@
-use crate::{dbg_format, parser::{syntax::token::Token, types::object::Object, LoxParser}};
+use crate::{dbg_format, parser::syntax::token::Token};
 
 
 #[derive(Debug)]
@@ -10,49 +10,6 @@ pub enum Expr {
     Unary (Token, Box<Expr>),
 }
 
-
-impl Expr {
-
-    pub fn evaluate(&self, vm: &mut LoxParser) -> Result<Object, String> {
-        use Expr::*;
-        use Token::{*};
-        match self {
-            // simple values
-            Literal(Nil) => Ok(Object::Nil),
-            Literal(False) => Ok(Object::Boolean(false)),
-            Literal(True) => Ok(Object::Boolean(true)),
-            Literal(String(str)) => Ok(Object::String(str.clone())),
-            Literal(Number(num)) => Ok(Object::Number(num.clone())),
-            Literal(Identifier(idnt_name)) => Ok(vm.var_get(idnt_name)?.clone()),
-            // Unary expr
-            Unary(Bang, expr) => expr.evaluate(vm)?.not(),
-            Unary(Minus, expr) => expr.evaluate(vm)?.neg(),
-            // Group expr
-            Group(expr) => expr.evaluate(vm),
-            // Binary
-            Binary(left, Slash, right) => left.evaluate(vm)?.div(&right.evaluate(vm)?),
-            Binary(left, Star, right) => left.evaluate(vm)?.mul(&right.evaluate(vm)?),
-            Binary(left, Minus, right) => left.evaluate(vm)?.sub(&right.evaluate(vm)?),
-            Binary(left, Plus, right) => left.evaluate(vm)?.add(&right.evaluate(vm)?),
-            Binary(left, Greater, right) => left.evaluate(vm)?.gt(&right.evaluate(vm)?),
-            Binary(left, GreaterEqual, right) => left.evaluate(vm)?.ge(&right.evaluate(vm)?),
-            Binary(left, Less, right) => left.evaluate(vm)?.lt(&right.evaluate(vm)?),
-            Binary(left, LessEqual, right) => left.evaluate(vm)?.le(&right.evaluate(vm)?),
-            Binary(left, EqualEqual, right) => left.evaluate(vm)?.eq(&right.evaluate(vm)?),
-            Binary(left, BangEqual, right) => left.evaluate(vm)?.ne(&right.evaluate(vm)?),
-            Binary(left, And, right) => left.evaluate(vm)?.logic_and(&right.evaluate(vm)?),
-            Binary(left, Or, right) => left.evaluate(vm)?.logic_or(&right.evaluate(vm)?),
-            Assign(Identifier(idnt_name), expr) => {
-                let value = expr.evaluate(vm)?;
-                vm.var_set(idnt_name.clone(), value)
-            },
-            left => {
-                Err(dbg_format!("NOT CHECKED TYPE: {:#?}", left))
-            },
-        }
-    }
-
-}
 
 // parsing methods
 impl Expr {
