@@ -14,6 +14,7 @@ impl VmVarPool {
         }
     }
 
+    #[allow(dead_code)]
     pub fn clear(&mut self) {
         self.pool.clear()
     }

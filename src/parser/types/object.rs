@@ -1,7 +1,7 @@
 
 use std::fmt::Display;
 
-use crate::dbg_format;
+use crate::{dbg_format, parser::syntax::statement::Stmt};
 
 use super::number::Number;
 
@@ -12,6 +12,7 @@ pub enum Object {
     Boolean(bool),
     Number(Number),
     String(String),
+    Function(Vec<String>, Stmt),
 }
 
 impl Clone for Object {
@@ -21,6 +22,7 @@ impl Clone for Object {
             Self::Boolean(arg0) => Self::Boolean(arg0.clone()),
             Self::Number(arg0) => Self::Number(arg0.clone()),
             Self::String(arg0) => Self::String(arg0.clone()),
+            Self::Function(params, body) => Self::Function(params.clone(), body.clone()),
         }
     }
 }
@@ -32,6 +34,7 @@ impl Display for Object {
             Self::Boolean(b) => write!(f, "{}", b),
             Self::Number(num) => write!(f, "{}", num),
             Self::String(str) => write!(f, "{}", str),
+            Self::Function(params, body) => write!(f, "({:#?}) {:#?}", params, body),
         }
     }
 }

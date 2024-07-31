@@ -4,6 +4,7 @@ use super::var_pool::VmVarPool;
 
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct VmStack {
     name: String,
     scopes: Vec<VmVarPool>,

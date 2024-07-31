@@ -30,6 +30,27 @@ macro_rules! dbg_format {
     }};
 }
 
+#[macro_export]
+macro_rules! dbg_println {
+    ($fmt:expr) => {{
+        println!(
+            "[{}:{}] {}",
+            file!(),
+            line!(),
+            $fmt
+        )
+    }};
+    ($fmt:expr, $($arg:tt)*) => {{
+        println!(
+            "[{}:{}] {}",
+            file!(),
+            line!(),
+            println!($fmt, $($arg)*)
+        )
+    }};
+}
+
+
 mod syntax {
     pub mod token;
     pub mod expression;
@@ -104,6 +125,32 @@ impl LoxParser {
                 let value = self.eval(expr)?;
                 self.var_set(idnt_name.clone(), value)
             },
+            FnCall(fn_name, args) => {
+                let (params, body) = match self.var_get(fn_name)? {
+                    Object::Function(params, body) => (params, body),
+                    _ => return Err(dbg_format!("not a function: {}", fn_name)),
+                };
+                let n_params = params.len();
+                if n_params != args.len() {
+                    return Err(dbg_format!("function `{}` expect {} arguments, got {}", fn_name, n_params, args.len()));
+                }
+
+                // don't clone() before param length check
+                let params = params.clone();
+                let body = body.clone();
+
+                let mut real_args: Vec<Object> = Vec::new();
+                for arg in args {
+                    real_args.push(self.eval(arg)?);
+                }
+
+                self.stack_new(fn_name.clone());
+                self.var_add_all(params, real_args);
+                self.exec(&body)?;
+                self.stack_del();
+                // ret
+                Ok(Object::Nil)
+            },
             left => {
                 Err(dbg_format!("NOT CHECKED TYPE: {:#?}", left))
             },
@@ -143,6 +190,9 @@ impl LoxParser {
                         self.var_add(idnt_name.clone(), Object::Nil);
                     },
                 };
+            },
+            Stmt::FunDecl(fn_name, params, fn_body) => {
+                self.var_add(fn_name.clone(), Object::Function(params.clone(), *fn_body.clone()));
             },
             Stmt::While(cont, body) => {
                 while self.eval(cont)?.is_true()? {

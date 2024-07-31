@@ -13,8 +13,23 @@ pub enum Stmt{
     If(Expr, Box<Stmt>, Option<Box<Stmt>>),
     While(Expr, Box<Stmt>),
     For(Option<Box<Stmt>>, Option<Expr>, Option<Expr>, Box<Stmt>),
+    FunDecl(String, Vec<String>, Box<Stmt>),
 }
 
+impl Clone for Stmt {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Block(arg0) => Self::Block(arg0.clone()),
+            Self::Decl(arg0, arg1) => Self::Decl(arg0.clone(), arg1.clone()),
+            Self::Expr(arg0) => Self::Expr(arg0.clone()),
+            Self::Print(arg0) => Self::Print(arg0.clone()),
+            Self::If(arg0, arg1, arg2) => Self::If(arg0.clone(), arg1.clone(), arg2.clone()),
+            Self::While(arg0, arg1) => Self::While(arg0.clone(), arg1.clone()),
+            Self::For(arg0, arg1, arg2, arg3) => Self::For(arg0.clone(), arg1.clone(), arg2.clone(), arg3.clone()),
+            Self::FunDecl(arg0, arg1, arg2) => Self::FunDecl(arg0.clone(), arg1.clone(), arg2.clone()),
+        }
+    }
+}
 
 impl Stmt {
 
@@ -32,9 +47,55 @@ impl Stmt {
             Some(Token::While) => Ok(Self::ctrl_while(tks, start)?),
             Some(Token::For) => Ok(Self::ctrl_for(tks, start)?),
             Some(Token::LeftBrace) => Ok(Self::block(tks, start)?),
+            Some(Token::Fun) => Self::fun_decl(tks, start),
             Some(_) => Self::expr(tks, start),
             None => Err(dbg_format!("Failed to get token from list")),
         }
+    }
+
+    pub fn fun_decl(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+        if !matches!(tks.get(start), Some(Token::Fun)) {
+            return Err(dbg_format!("not start with Token: fun"));
+        }
+        let mut ret_adv = 1;
+        let fn_name;
+        match tks.get(start+ret_adv) {
+            Some(Token::Identifier(name)) => {
+                fn_name = name.clone();
+                ret_adv += 1;
+            },
+            _ => return Err(dbg_format!("function name expected!!")),
+        }
+        match tks.get(start+ret_adv) {
+            Some(Token::LeftParen) => ret_adv += 1,
+            tk => return Err(dbg_format!("expected (, but got {:#?}", tk)),
+        }
+
+        let mut args = Vec::new();
+        if let Some(Token::Identifier(arg)) = tks.get(start + ret_adv) {
+            args.push(arg.clone());
+            ret_adv += 1;
+            while let Some(Token::Comma) = tks.get(start + ret_adv) {
+                ret_adv += 1;
+                match tks.get(start + ret_adv) {
+                    Some(Token::Identifier(arg)) => {
+                        args.push(arg.clone());
+                        ret_adv += 1;
+                    },
+                    _ => return Err(dbg_format!("must be an identifier for the arguments list")),
+                }
+            }
+        }
+
+        match tks.get(start+ret_adv) {
+            Some(Token::RightParen) => ret_adv += 1,
+            tk => return Err(dbg_format!("expected ), but got {:#?}", tk)),
+        }
+
+        let (fn_body, used) = Self::block(tks, start+ret_adv)?;
+        ret_adv += used;
+
+        Ok((Stmt::FunDecl(fn_name, args, Box::new(fn_body)), ret_adv))
     }
 
     pub fn ctrl_for(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {

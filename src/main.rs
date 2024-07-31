@@ -21,11 +21,40 @@ fn test(lox: &mut LoxParser) {
     println!("{:#?}", lox.exec_line(&CODE_IF.to_string()));
     println!("{:#?}", lox.exec_line(&CODE_WHILE.to_string()));
     println!("{:#?}", lox.exec_line(&CODE_FOR.to_string()));
+    println!("{:#?}", lox.exec_line(&CODE_FUNCTION.to_string()));
 
     dbg!(&lox);
     lox.clear();
     dbg!(lox);
 }
+
+const CODE_FUNCTION: &str = "
+
+fun fn1() {
+    print \"entered fn1\";
+    print 1;
+}
+
+fun fn2(arg1) {
+    print \"entered fn2\";
+    print arg1;
+}
+
+fun fn3(arg1, arg2) {
+    print \"entered fn3\";
+    print arg1;
+    print arg2;
+}
+
+fn1();
+
+var arg1 = 1;
+
+fn2(arg1);
+fn3(arg1, arg1);
+fn3(1, 1+2, nn==4);
+
+";
 
 const CODE_FOR: &str = "
 var temp;
