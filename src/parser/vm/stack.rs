@@ -38,7 +38,17 @@ impl VmStack {
         self.scopes.get_mut(0).unwrap()
     }
 
-    pub fn scope_of_var(&mut self, name: &String) -> Result<&mut VmVarPool, String> {
+    pub fn scope_of_var(&self, name: &String) -> Result<&VmVarPool, String> {
+        let mut iter = self.scopes.iter();
+        while let Some(scope) = iter.next() {
+            if scope.var_exist(name) {
+                return Ok(scope);
+            }
+        }
+        Err(dbg_format!("cannot find object named: {}", name))
+    }
+
+    pub fn scope_of_var_mut(&mut self, name: &String) -> Result<&mut VmVarPool, String> {
         let mut iter = self.scopes.iter_mut();
         while let Some(scope) = iter.next() {
             if scope.var_exist(name) {
@@ -65,7 +75,7 @@ impl VmStack {
      * name: name of the variable
      */
     pub fn var_set(&mut self, name: String, obj: Object) -> Result<Object, String> {
-        self.scope_of_var(&name)?.var_set(name, obj)
+        self.scope_of_var_mut(&name)?.var_set(name, obj)
     }
 
     /**
@@ -75,7 +85,7 @@ impl VmStack {
      */
     #[allow(dead_code)]
     pub fn var_pop(&mut self, name: &String) -> Result<Object, String> {
-        self.scope_of_var(name)?.var_pop(name)
+        self.scope_of_var_mut(name)?.var_pop(name)
     }
 
     /**
@@ -85,8 +95,12 @@ impl VmStack {
      *
      * ret: Some(&obj) if success, None for failed
      */
-    pub fn var_get(&mut self, name: &String) -> Result<&mut Object, String> {
+    pub fn var_get(&self, name: &String) -> Result<&Object, String> {
         self.scope_of_var(name)?.var_get(&name)
+    }
+
+    pub fn var_get_mut(&mut self, name: &String) -> Result<&mut Object, String> {
+        self.scope_of_var_mut(name)?.var_get_mut(&name)
     }
 
 }

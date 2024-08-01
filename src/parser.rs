@@ -189,6 +189,7 @@ impl LoxParser {
         self.stacks.insert(0, VmStack::new(name))
     }
 
+    #[allow(dead_code)]
     pub fn stack_new_with_args(&mut self, stack_name: String, params: Vec<String>, args: Vec<Object>) {
         self.stack_new(stack_name);
         self.var_add_all(params, args);
@@ -201,7 +202,15 @@ impl LoxParser {
     /**
      * get current stack, will return `global` if no function stack exist
      */
-    pub fn stack_current(&mut self) -> &mut VmStack {
+    pub fn stack_current(&self) -> &VmStack {
+        if self.stacks.is_empty() {
+            &self.global
+        } else {
+            self.stacks.get(0).unwrap()
+        }
+    }
+
+    pub fn stack_current_mut(&mut self) -> &mut VmStack {
         if self.stacks.is_empty() {
             &mut self.global
         } else {
@@ -217,7 +226,7 @@ impl LoxParser {
      * obj: value
      */
     pub fn var_add(&mut self, name: String, obj: Object) {
-        self.stack_current().var_add(name, obj)
+        self.stack_current_mut().var_add(name, obj)
     }
 
     #[allow(dead_code)]
@@ -236,7 +245,7 @@ impl LoxParser {
      * name: name of the variable
      */
     pub fn var_set(&mut self, name: String, obj: Object) -> Result<Object, String> {
-        self.stack_current().var_set(name, obj)
+        self.stack_current_mut().var_set(name, obj)
     }
 
     /**
@@ -247,7 +256,7 @@ impl LoxParser {
      */
     #[allow(dead_code)]
     pub fn var_pop(&mut self, name: &String) -> Result<Object, String> {
-        self.stack_current().var_pop(name)
+        self.stack_current_mut().var_pop(name)
     }
 
     /**
@@ -258,16 +267,21 @@ impl LoxParser {
      *
      * ret: Some(&obj) if success, None for failed
      */
-    pub fn var_get(&mut self, name: &String) -> Result<&mut Object, String> {
+    pub fn var_get(&self, name: &String) -> Result<&Object, String> {
         self.stack_current().var_get(name)
     }
 
+    #[allow(dead_code)]
+    pub fn var_get_mut(&mut self, name: &String) -> Result<&mut Object, String> {
+        self.stack_current_mut().var_get_mut(name)
+    }
+
     pub fn block_enter(&mut self) {
-        self.stack_current().scope_enter()
+        self.stack_current_mut().scope_enter()
     }
 
     pub fn block_exit(&mut self) {
-        self.stack_current().scope_exit()
+        self.stack_current_mut().scope_exit()
     }
 
 }
@@ -324,6 +338,7 @@ impl LoxParser {
         self.exec_stmt_all_available()
     }
 
+    #[allow(dead_code)]
     pub fn repl(&mut self) -> Result<(), String> {
         let stdin = io::stdin();
 

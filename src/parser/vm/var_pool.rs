@@ -69,14 +69,21 @@ impl VmVarPool {
      *
      * ret: Some(&obj) if success, None for failed
      */
-    pub fn var_get(&mut self, name: &String) -> Result<&mut Object, String> {
+    pub fn var_get(&self, name: &String) -> Result<&Object, String> {
+        match self.pool.get(name) {
+            Some(obj) => Ok(obj),
+            None => Err(dbg_format!("cannot find object named: {}", name)),
+        }
+    }
+
+    pub fn var_get_mut(&mut self, name: &String) -> Result<&mut Object, String> {
         match self.pool.get_mut(name) {
             Some(obj) => Ok(obj),
             None => Err(dbg_format!("cannot find object named: {}", name)),
         }
     }
 
-    pub fn var_exist(&mut self, name: &String) -> bool {
+    pub fn var_exist(&self, name: &String) -> bool {
         self.pool.contains_key(name)
     }
 
