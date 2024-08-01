@@ -64,8 +64,21 @@ fn4(1, 5);
 fn4(5, 10);
 fn4(10, 15);
 
+fun inside(arg) {
+    print \"entered inside\";
+    for (var i=0; i<arg; i=i+1) {
+        print i;
+    }
+}
 
+fun outside(arg) {
+    print \"entered outside\";
+    for (var i=0; i<arg; i=i+1) {
+        inside(i);
+    }
+}
 
+outside(3);
 ";
 
 const CODE_FOR: &str = "

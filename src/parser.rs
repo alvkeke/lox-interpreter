@@ -268,6 +268,26 @@ impl LoxParser {
         }
     }
 
+    pub fn stack_for_var(&self, name: &String) -> &VmStack {
+        let mut iter = self.stacks.iter();
+        while let Some(stack) = iter.next() {
+            if stack.var_exist(name) {
+                return stack;
+            }
+        }
+        &self.global
+    }
+
+    pub fn stack_for_var_mut(&mut self, name: &String) -> &mut VmStack {
+        let mut iter = self.stacks.iter_mut();
+        while let Some(stack) = iter.next() {
+            if stack.var_exist(name) {
+                return stack;
+            }
+        }
+        &mut self.global
+    }
+
     /**
      * add a new variable in current context,
      * overwrite if named variable exist
@@ -295,7 +315,7 @@ impl LoxParser {
      * name: name of the variable
      */
     pub fn var_set(&mut self, name: String, obj: Object) -> Result<Object, String> {
-        self.stack_current_mut().var_set(name, obj)
+        self.stack_for_var_mut(&name).var_set(name, obj)
     }
 
     /**
@@ -306,7 +326,7 @@ impl LoxParser {
      */
     #[allow(dead_code)]
     pub fn var_pop(&mut self, name: &String) -> Result<Object, String> {
-        self.stack_current_mut().var_pop(name)
+        self.stack_for_var_mut(name).var_pop(name)
     }
 
     /**
@@ -318,12 +338,12 @@ impl LoxParser {
      * ret: Some(&obj) if success, None for failed
      */
     pub fn var_get(&self, name: &String) -> Result<&Object, String> {
-        self.stack_current().var_get(name)
+        self.stack_for_var(name).var_get(name)
     }
 
     #[allow(dead_code)]
     pub fn var_get_mut(&mut self, name: &String) -> Result<&mut Object, String> {
-        self.stack_current_mut().var_get_mut(name)
+        self.stack_for_var_mut(name).var_get_mut(name)
     }
 
     pub fn block_enter(&mut self) {

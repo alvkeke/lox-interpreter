@@ -104,4 +104,8 @@ impl VmStack {
         self.scope_of_var_mut(name)?.var_get_mut(&name)
     }
 
+    pub fn var_exist(&self, name: &String) -> bool {
+        self.scope_of_var(name).is_ok()
+    }
+
 }
