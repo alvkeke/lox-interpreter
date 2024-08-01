@@ -52,7 +52,19 @@ var arg1 = 1;
 
 fn2(arg1);
 fn3(arg1, arg1);
-fn3(1, 1+2, nn==4);
+
+fun fn4(arg1, arg2) {
+    print \"entered fn4\";
+    for (var i=arg1; i<arg2; i=i+1) {
+        print i;
+    }
+}
+
+fn4(1, 5);
+fn4(5, 10);
+fn4(10, 15);
+
+
 
 ";
 
