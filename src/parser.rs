@@ -6,7 +6,7 @@ use syntax::expression::Expr;
 use syntax::statement::Stmt;
 use syntax::token::Token;
 use types::object::Object;
-use vm::stack::VmStack;
+use vm::vm::LoxVM;
 
 use crate::dbg_format;
 
@@ -64,14 +64,14 @@ mod types {
 mod vm {
     pub mod stack;
     pub mod var_pool;
+    pub mod vm;
 }
 
 
 #[derive(Debug)]
 pub struct LoxParser {
     prompt: String,
-    global: VmStack,
-    stacks: Vec<VmStack>,
+    vm: LoxVM,
     tokens: Vec<Token>,
 }
 
@@ -80,12 +80,16 @@ impl LoxParser {
     pub fn new() -> Self {
         let lox = LoxParser{
             prompt: String::from(">> "),
-            global: VmStack::new("()".to_string()),
-            stacks: Vec::new(),
+            vm: LoxVM::new(),
             tokens: Vec::new()
         };
 
         lox
+    }
+
+    pub fn clear (&mut self) {
+        self.vm.clear();
+        self.tokens.clear();
     }
 }
 
@@ -102,7 +106,7 @@ impl LoxParser {
             Literal(True) => Ok(Object::Boolean(true)),
             Literal(String(str)) => Ok(Object::String(str.clone())),
             Literal(Number(num)) => Ok(Object::Number(num.clone())),
-            Literal(Identifier(idnt_name)) => Ok(self.var_get(idnt_name)?.clone()),
+            Literal(Identifier(idnt_name)) => Ok(self.vm.var_get(idnt_name)?.clone()),
             // Unary expr
             Unary(Bang, expr) => self.eval(expr)?.not(),
             Unary(Minus, expr) => self.eval(expr)?.neg(),
@@ -123,10 +127,10 @@ impl LoxParser {
             Binary(left, Or, right) => self.eval(left)?.logic_or(&self.eval(right)?),
             Assign(Identifier(idnt_name), expr) => {
                 let value = self.eval(expr)?;
-                self.var_set(idnt_name.clone(), value)
+                self.vm.var_set(idnt_name.clone(), value)
             },
             FnCall(fn_name, args) => {
-                let (params, body) = match self.var_get(fn_name)? {
+                let (params, body) = match self.vm.var_get(fn_name)? {
                     Object::Function(params, body) => (params, body),
                     _ => return Err(dbg_format!("not a function: {}", fn_name)),
                 };
@@ -144,10 +148,10 @@ impl LoxParser {
                     real_args.push(self.eval(arg)?);
                 }
 
-                self.stack_new(fn_name.clone());
-                self.var_add_all(params, real_args);
+                self.vm.stack_new(fn_name.clone());
+                self.vm.var_add_all(params, real_args);
                 self.exec(&body)?;
-                self.stack_del();
+                self.vm.stack_del();
                 // ret
                 Ok(Object::Nil)
             },
@@ -166,12 +170,12 @@ impl LoxParser {
                 println!("{}", self.eval(expr)?);
             },
             Stmt::Block(stmts) => {
-                self.block_enter();
+                self.vm.block_enter();
                 let mut iter = stmts.iter();
                 while let Some(stmt) = iter.next() {
                     self.exec(stmt)?;
                 }
-                self.block_exit();
+                self.vm.block_exit();
             }
             Stmt::If(cont, stmt_true, opt_false) => {
                 if self.eval(cont)?.is_true()? {
@@ -184,15 +188,15 @@ impl LoxParser {
                 match expr {
                     Some(expr) => {
                         let obj = self.eval(expr)?;
-                        self.var_add(idnt_name.clone(), obj);
+                        self.vm.var_add(idnt_name.clone(), obj);
                     },
                     _ => {
-                        self.var_add(idnt_name.clone(), Object::Nil);
+                        self.vm.var_add(idnt_name.clone(), Object::Nil);
                     },
                 };
             },
             Stmt::FunDecl(fn_name, params, fn_body) => {
-                self.var_add(fn_name.clone(), Object::Function(params.clone(), *fn_body.clone()));
+                self.vm.var_add(fn_name.clone(), Object::Function(params.clone(), *fn_body.clone()));
             },
             Stmt::While(cont, body) => {
                 while self.eval(cont)?.is_true()? {
@@ -200,7 +204,7 @@ impl LoxParser {
                 }
             },
             Stmt::For(start, cont, every, body) => {
-                self.block_enter();
+                self.vm.block_enter();
                 if let Some(start) = start {
                     self.exec(start)?;
                 }
@@ -216,142 +220,13 @@ impl LoxParser {
                         self.eval(every)?;
                     }
                 }
-                self.block_exit();
+                self.vm.block_exit();
             },
             _ => {
                 return Err(dbg_format!("Unexpected statement"));
             },
         }
         Ok(None)
-    }
-
-}
-
-// VirtualMachine related
-impl LoxParser {
-
-    pub fn clear(&mut self) {
-        self.global.clear();
-        self.stacks.clear();
-    }
-
-    pub fn stack_new(&mut self, name: String) {
-        self.stacks.insert(0, VmStack::new(name))
-    }
-
-    #[allow(dead_code)]
-    pub fn stack_new_with_args(&mut self, stack_name: String, params: Vec<String>, args: Vec<Object>) {
-        self.stack_new(stack_name);
-        self.var_add_all(params, args);
-    }
-
-    pub fn stack_del(&mut self) {
-        self.stacks.remove(0);
-    }
-
-    /**
-     * get current stack, will return `global` if no function stack exist
-     */
-    pub fn stack_current(&self) -> &VmStack {
-        if self.stacks.is_empty() {
-            &self.global
-        } else {
-            self.stacks.get(0).unwrap()
-        }
-    }
-
-    pub fn stack_current_mut(&mut self) -> &mut VmStack {
-        if self.stacks.is_empty() {
-            &mut self.global
-        } else {
-            self.stacks.get_mut(0).unwrap()
-        }
-    }
-
-    pub fn stack_for_var(&self, name: &String) -> &VmStack {
-        let mut iter = self.stacks.iter();
-        while let Some(stack) = iter.next() {
-            if stack.var_exist(name) {
-                return stack;
-            }
-        }
-        &self.global
-    }
-
-    pub fn stack_for_var_mut(&mut self, name: &String) -> &mut VmStack {
-        let mut iter = self.stacks.iter_mut();
-        while let Some(stack) = iter.next() {
-            if stack.var_exist(name) {
-                return stack;
-            }
-        }
-        &mut self.global
-    }
-
-    /**
-     * add a new variable in current context,
-     * overwrite if named variable exist
-     *
-     * name: target variable name
-     * obj: value
-     */
-    pub fn var_add(&mut self, name: String, obj: Object) {
-        self.stack_current_mut().var_add(name, obj)
-    }
-
-    #[allow(dead_code)]
-    pub fn var_add_all(&mut self, mut params: Vec<String>, mut args: Vec<Object>) {
-        while !params.is_empty() && !args.is_empty() {
-            let name = params.remove(0);
-            let obj = args.remove(0);
-            self.var_add(name, obj);
-        }
-    }
-
-    /**
-     * edit the exist variable, will go through current stack and global
-     * `current stack` will go first before `global`
-     *
-     * name: name of the variable
-     */
-    pub fn var_set(&mut self, name: String, obj: Object) -> Result<Object, String> {
-        self.stack_for_var_mut(&name).var_set(name, obj)
-    }
-
-    /**
-     * remove/pop the variable, will go through current stack and global
-     * `current stack` will go first before `global`
-     *
-     * name: name of the variable
-     */
-    #[allow(dead_code)]
-    pub fn var_pop(&mut self, name: &String) -> Result<Object, String> {
-        self.stack_for_var_mut(name).var_pop(name)
-    }
-
-    /**
-     * get the variable value(ref), will go through current stack and global
-     * `current stack` will go first before `global`
-     *
-     * name: name of the variable
-     *
-     * ret: Some(&obj) if success, None for failed
-     */
-    pub fn var_get(&self, name: &String) -> Result<&Object, String> {
-        self.stack_for_var(name).var_get(name)
-    }
-
-    #[allow(dead_code)]
-    pub fn var_get_mut(&mut self, name: &String) -> Result<&mut Object, String> {
-        self.stack_for_var_mut(name).var_get_mut(name)
-    }
-
-    pub fn block_enter(&mut self) {
-        self.stack_current_mut().scope_enter()
-    }
-
-    pub fn block_exit(&mut self) {
-        self.stack_current_mut().scope_exit()
     }
 
 }
