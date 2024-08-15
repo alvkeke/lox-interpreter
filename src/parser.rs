@@ -55,6 +55,7 @@ mod syntax {
     pub mod statement;
 }
 mod types {
+    pub mod common;
     pub mod object;
     pub mod number;
 }

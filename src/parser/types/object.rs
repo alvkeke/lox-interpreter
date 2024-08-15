@@ -1,9 +1,9 @@
 
-use std::fmt::Display;
+use std::{fmt::Display, sync::Arc};
 
 use crate::{dbg_format, parser::syntax::statement::Stmt};
 
-use super::number::Number;
+use super::{number::Number, common::Result};
 
 
 #[derive(Debug)]
@@ -14,6 +14,9 @@ pub enum Object {
     String(String),
     Function(Vec<String>, Stmt),
 }
+
+pub type Orc<T> = Arc<T>;
+pub type ObjectRc = Orc<Object>;
 
 impl Clone for Object {
     fn clone(&self) -> Self {
@@ -41,7 +44,7 @@ impl Display for Object {
 
 impl Object {
 
-    pub fn is_true(&self) -> Result<bool, String> {
+    pub fn is_true(&self) -> Result<bool> {
         match self {
             Self::Boolean(b) => Ok(*b),
             Self::Nil => Ok(false),
@@ -49,19 +52,7 @@ impl Object {
         }
     }
 
-    pub fn logic_and(&self, right: &Object) -> Result<Object, String> {
-        Ok(Object::Boolean(self.is_true()? && right.is_true()?))
-    }
-
-    pub fn logic_or(&self, right: &Object) -> Result<Object, String> {
-        Ok(Object::Boolean(self.is_true()? || right.is_true()?))
-    }
-
-}
-
-
-impl Object {
-    pub fn not(&self) -> Result<Self, String> {
+    pub fn not(&self) -> Result<Object> {
         use Object::{Boolean, Nil};
         match self {
             Boolean(bool) => Ok(Object::Boolean(!bool)),
@@ -70,14 +61,22 @@ impl Object {
         }
     }
 
-    pub fn neg(&self) -> Result<Self, String> {
+    pub fn neg(&self) -> Result<Object> {
         match self {
             Object::Number(num) => Ok(Object::Number(-num.clone())),
             _ => Err(dbg_format!("not supported operation `Not(!)' on {:#?}", self))
         }
     }
 
-    pub fn add(&self, rhs: &Self) -> Result<Self, String> {
+    pub fn logic_and(&self, rhs: &Self) -> Result<Object> {
+        Ok(Object::Boolean(self.is_true()? && rhs.is_true()?))
+    }
+
+    pub fn logic_or(&self, rhs: &Self) -> Result<Object> {
+        Ok(Object::Boolean(self.is_true()? || rhs.is_true()?))
+    }
+
+    pub fn add(&self, rhs: &Self) -> Result<Object> {
         use Object::*;
         match (self, rhs) {
             (Number(arg1), Number(arg2)) => {
@@ -96,7 +95,7 @@ impl Object {
         }
     }
 
-    pub fn sub(&self, rhs: &Self) -> Result<Self, String> {
+    pub fn sub(&self, rhs: &Self) -> Result<Object> {
         use Object::*;
         match (self, rhs) {
             (Number(arg1), Number(arg2)) => {
@@ -106,7 +105,7 @@ impl Object {
         }
     }
 
-    pub fn mul(&self, rhs: &Self) -> Result<Self, String> {
+    pub fn mul(&self, rhs: &Self) -> Result<Object> {
         use Object::*;
         match (self, rhs) {
             (Number(arg1), Number(arg2)) => {
@@ -116,81 +115,144 @@ impl Object {
         }
     }
 
-    pub fn div(&self, rhs: &Self) -> Result<Self, String> {
+    pub fn div(&self, rhs: &Self) -> Result<Object> {
         use Object::*;
         match (self, rhs) {
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::Number(arg1.div_ref(arg2)?))
+                Ok(Object::Number(arg1.div_ref(&arg2)?))
             },
             _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
     }
 
-    pub fn eq(&self, other: &Self) -> Result<Self, String> {
+    pub fn eq(&self, rhs: &Self) -> Result<Object> {
         use Object::*;
-        match (self, other) {
+        match (self, rhs) {
             (Nil, Nil) => Ok(Object::Boolean(true)),
             (Boolean(arg1), Boolean(arg2)) => {
-                Ok(Object::Boolean(arg1 == arg2))
+                Ok(Object::Boolean(arg1 == &arg2.clone()))
             },
             (Number(arg1), Number(arg2)) => {
-                Ok(Object::Boolean(arg1 == arg2))
+                Ok(Object::Boolean(arg1 == &arg2.clone()))
             },
             (String(arg1), String(arg2)) => {
-                Ok(Object::Boolean(arg1 == arg2))
+                Ok(Object::Boolean(arg1 == &arg2.clone()))
             },
             // false if type mismatch
             _ => Ok(Object::Boolean(false)),
         }
     }
 
-    pub fn ne(&self, other: &Self) -> Result<Self, String> {
+    pub fn ne(&self, rhs: &Self) -> Result<Object> {
         use Object::Boolean;
-        match self.eq(other)? {
+        match self.eq(rhs)? {
             Boolean(b) => Ok(Self::Boolean(!b)),
             _ => panic!("should not get type beyond ObjectContent::Boolean()"),
         }
     }
 
-    pub fn lt(&self, other: &Self) -> Result<Self, String> {
+    pub fn lt(&self, rhs: &Self) -> Result<Object> {
         use Object::*;
-        match (self, other) {
+        match (self, rhs) {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::Boolean(arg1 < arg2))
             },
-            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, other)),
+            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
     }
 
-    pub fn le(&self, other: &Self) -> Result<Self, String> {
+    pub fn le(&self, rhs: &Self) -> Result<Object> {
         use Object::*;
-        match (self, other) {
+        match (self, rhs) {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::Boolean(arg1 <= arg2))
             },
-            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, other)),
+            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
     }
 
-    pub fn gt(&self, other: &Self) -> Result<Self, String> {
+    pub fn gt(&self, rhs: &Self) -> Result<Object> {
         use Object::*;
-        match (self, other) {
+        match (self, rhs) {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::Boolean(arg1 > arg2))
             },
-            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, other)),
+            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
     }
 
-    pub fn ge(&self, other: &Self) -> Result<Self, String> {
+    pub fn ge(&self, rhs: &Self) -> Result<Object> {
         use Object::*;
-        match (self, other) {
+        match (self, rhs) {
             (Number(arg1), Number(arg2)) => {
                 Ok(Object::Boolean(arg1 >= arg2))
             },
-            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, other)),
+            _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
     }
 
 }
 
+impl Object {
+
+    pub fn to_rc(self) -> ObjectRc {
+        Orc::new(self)
+    }
+
+    pub fn not_rc(&self) -> Result<ObjectRc> {
+        Ok(Object::not(self)?.to_rc())
+    }
+
+    pub fn neg_rc(&self) -> Result<ObjectRc> {
+        Ok(Object::neg(self)?.to_rc())
+    }
+
+    pub fn logic_and_rc(&self, rhs: ObjectRc) -> Result<ObjectRc> {
+        Ok(Object::logic_and(self, &*rhs)?.to_rc())
+    }
+
+    pub fn logic_or_rc(&self, rhs: ObjectRc) -> Result<ObjectRc> {
+        Ok(Object::logic_or(self, &*rhs)?.to_rc())
+    }
+
+    pub fn add_rc(&self, rhs: ObjectRc) -> Result<ObjectRc> {
+        Ok(Object::add(self, &*rhs)?.to_rc())
+    }
+
+    pub fn sub_rc(&self, rhs: ObjectRc) -> Result<ObjectRc> {
+        Ok(Object::sub(self, &*rhs)?.to_rc())
+    }
+
+    pub fn mul_rc(&self, rhs: ObjectRc) -> Result<ObjectRc> {
+        Ok(Object::mul(self, &*rhs)?.to_rc())
+    }
+
+    pub fn div_rc(&self, rhs: ObjectRc) -> Result<ObjectRc> {
+        Ok(Object::div(self, &*rhs)?.to_rc())
+    }
+
+    pub fn eq_rc(&self, rhs: ObjectRc) -> Result<ObjectRc> {
+        Ok(Object::eq(self, &*rhs)?.to_rc())
+    }
+
+    pub fn ne_rc(&self, rhs: ObjectRc) -> Result<ObjectRc> {
+        Ok(Object::ne(self, &*rhs)?.to_rc())
+    }
+
+    pub fn lt_rc(&self, rhs: ObjectRc) -> Result<ObjectRc> {
+        Ok(Object::lt(self, &*rhs)?.to_rc())
+    }
+
+    pub fn le_rc(&self, rhs: ObjectRc) -> Result<ObjectRc> {
+        Ok(Object::le(self, &*rhs)?.to_rc())
+    }
+
+    pub fn gt_rc(&self, rhs: ObjectRc) -> Result<ObjectRc> {
+        Ok(Object::gt(self, &*rhs)?.to_rc())
+    }
+
+    pub fn ge_rc(&self, rhs: ObjectRc) -> Result<ObjectRc> {
+        Ok(Object::ge(self, &*rhs)?.to_rc())
+    }
+
+}
