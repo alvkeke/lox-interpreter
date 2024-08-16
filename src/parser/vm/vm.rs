@@ -13,7 +13,7 @@ use crate::{
                 Object,
                 ObjectRc,
             },
-            common::Result
+            common::{shared_str_from, Result, SharedStr},
         },
     },
 };
@@ -27,7 +27,7 @@ pub struct LoxVM {
 impl LoxVM {
     pub fn new () -> Self {
         Self {
-            global: VmStack::new("(global)".to_string()),
+            global: VmStack::new(shared_str_from("(global)".to_string())),
             stacks: Vec::new(),
         }
     }
@@ -180,12 +180,12 @@ impl LoxVM {
         self.stacks.clear();
     }
 
-    pub fn stack_new(&mut self, name: String) {
+    pub fn stack_new(&mut self, name: SharedStr) {
         self.stacks.insert(0, VmStack::new(name))
     }
 
     #[allow(dead_code)]
-    pub fn stack_new_with_args(&mut self, stack_name: String, params: Vec<String>, args: Vec<ObjectRc>) {
+    pub fn stack_new_with_args(&mut self, stack_name: SharedStr, params: Vec<SharedStr>, args: Vec<ObjectRc>) {
         self.stack_new(stack_name);
         self.var_add_all(params, args);
     }
@@ -215,7 +215,7 @@ impl LoxVM {
         }
     }
 
-    pub fn stack_for_var(&self, name: &String) -> &VmStack {
+    pub fn stack_for_var(&self, name: &SharedStr) -> &VmStack {
         let mut iter = self.stacks.iter();
         while let Some(stack) = iter.next() {
             if stack.var_exist(name) {
@@ -225,7 +225,7 @@ impl LoxVM {
         &self.global
     }
 
-    pub fn stack_for_var_mut(&mut self, name: &String) -> &mut VmStack {
+    pub fn stack_for_var_mut(&mut self, name: &SharedStr) -> &mut VmStack {
         let mut iter = self.stacks.iter_mut();
         while let Some(stack) = iter.next() {
             if stack.var_exist(name) {
@@ -242,12 +242,12 @@ impl LoxVM {
      * name: target variable name
      * obj: value
      */
-    pub fn var_add(&mut self, name: String, obj: ObjectRc) {
+    pub fn var_add(&mut self, name: SharedStr, obj: ObjectRc) {
         self.stack_current_mut().var_add(name, obj)
     }
 
     #[allow(dead_code)]
-    pub fn var_add_all(&mut self, mut params: Vec<String>, mut args: Vec<ObjectRc>) {
+    pub fn var_add_all(&mut self, mut params: Vec<SharedStr>, mut args: Vec<ObjectRc>) {
         while !params.is_empty() && !args.is_empty() {
             let name = params.remove(0);
             let obj = args.remove(0);
@@ -261,7 +261,7 @@ impl LoxVM {
      *
      * name: name of the variable
      */
-    pub fn var_set(&mut self, name: String, obj: ObjectRc) -> Result<ObjectRc> {
+    pub fn var_set(&mut self, name: SharedStr, obj: ObjectRc) -> Result<ObjectRc> {
         self.stack_for_var_mut(&name).var_set(name, obj)
     }
 
@@ -272,7 +272,7 @@ impl LoxVM {
      * name: name of the variable
      */
     #[allow(dead_code)]
-    pub fn var_pop(&mut self, name: &String) -> Result<ObjectRc> {
+    pub fn var_pop(&mut self, name: &SharedStr) -> Result<ObjectRc> {
         self.stack_for_var_mut(name).var_pop(name)
     }
 
@@ -284,7 +284,7 @@ impl LoxVM {
      *
      * ret: Some(&obj) if success, None for failed
      */
-    pub fn var_get(&self, name: &String) -> Result<ObjectRc> {
+    pub fn var_get(&self, name: &SharedStr) -> Result<ObjectRc> {
         self.stack_for_var(name).var_get(name)
     }
 

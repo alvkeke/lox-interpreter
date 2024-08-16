@@ -1,4 +1,4 @@
-use crate::{dbg_format, parser::syntax::token::Token};
+use crate::{dbg_format, parser::{syntax::token::Token, types::common::SharedStr}};
 
 
 #[derive(Debug)]
@@ -8,7 +8,7 @@ pub enum Expr {
     Group (Box<Expr>),
     Literal (Token),
     Unary (Token, Box<Expr>),
-    FnCall(String, Vec<Box<Expr>>),
+    FnCall(SharedStr, Vec<Box<Expr>>),
 }
 
 impl Clone for Expr {

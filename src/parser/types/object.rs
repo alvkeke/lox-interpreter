@@ -1,10 +1,9 @@
 
-#[allow(unused_imports)]
-use std::{fmt::Display, rc::Rc, sync::Arc};
+use std::fmt::Display;
 
 use crate::{dbg_format, parser::syntax::statement::Stmt};
 
-use super::{number::Number, common::Result};
+use super::{common::{Crc, Result, SharedStr, shared_str_from}, number::Number};
 
 
 #[derive(Debug)]
@@ -12,12 +11,17 @@ pub enum Object {
     Nil,
     Boolean(bool),
     Number(Number),
-    String(String),
-    Function(Vec<String>, Stmt),
+    String(SharedStr),
+    Function(Vec<SharedStr>, Stmt),
 }
 
-pub type Orc<T> = Rc<T>;
-pub type ObjectRc = Orc<Object>;
+impl Object {
+    pub fn new_string(s: String) -> Self {
+        Self::String(shared_str_from(s))
+    }
+}
+
+pub type ObjectRc = Crc<Object>;
 
 impl Clone for Object {
     fn clone(&self) -> Self {
@@ -84,13 +88,13 @@ impl Object {
                 Ok(Object::Number(arg1.add_ref(&arg2)?))
             },
             (String(arg1), String(arg2)) => {
-                Ok(Object::String(format!("{}{}", arg1, arg2)))
+                Ok(Object::new_string(format!("{}{}", arg1, arg2)))
             },
             (Number(arg1), String(arg2)) => {
-                Ok(Object::String(format!("{}{}", arg1, arg2)))
+                Ok(Object::new_string(format!("{}{}", arg1, arg2)))
             },
             (String(arg1), Number(arg2)) => {
-                Ok(Object::String(format!("{}{}", arg1, arg2)))
+                Ok(Object::new_string(format!("{}{}", arg1, arg2)))
             },
             _ => Err(dbg_format!("object type not allowed {:#?} == {:#?}", self, rhs)),
         }
@@ -197,7 +201,7 @@ impl Object {
 impl Object {
 
     pub fn to_rc(self) -> ObjectRc {
-        Orc::new(self)
+        Crc::new(self)
     }
 
     pub fn not_rc(&self) -> Result<ObjectRc> {

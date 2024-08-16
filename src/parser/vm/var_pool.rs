@@ -3,14 +3,13 @@ use std::collections::HashMap;
 use crate::{
     dbg_format,
     parser::types::{
-        object::ObjectRc,
-        common::Result
+        common::{Result, SharedStr}, object::ObjectRc
     },
 };
 
 #[derive(Debug)]
 pub struct VmVarPool {
-    pool: HashMap<String, ObjectRc>
+    pool: HashMap<SharedStr, ObjectRc>
 }
 
 impl VmVarPool {
@@ -31,7 +30,7 @@ impl VmVarPool {
      * name: name of the variable
      * obj: obj value
      */
-    pub fn var_add(&mut self, name: String, obj: ObjectRc) {
+    pub fn var_add(&mut self, name: SharedStr, obj: ObjectRc) {
         self.pool.insert(name, obj);
     }
 
@@ -43,7 +42,7 @@ impl VmVarPool {
      *
      * ret: the Ok(obj) if success, Err(msg) if failed
      */
-    pub fn var_set(&mut self, name: String, obj: ObjectRc) -> Result<ObjectRc>{
+    pub fn var_set(&mut self, name: SharedStr, obj: ObjectRc) -> Result<ObjectRc>{
         match self.pool.contains_key(&name) {
             true => {
                 self.var_add(name, obj.clone());
@@ -62,7 +61,7 @@ impl VmVarPool {
      *
      * ret: Some(obj) if exist, None for not exist
      */
-    pub fn var_pop(&mut self, name: &String) -> Result<ObjectRc> {
+    pub fn var_pop(&mut self, name: &SharedStr) -> Result<ObjectRc> {
         match self.pool.remove(name) {
             Some(obj) => Ok(obj),
             None => Err(dbg_format!("cannot find object named: {}", name)),
@@ -76,14 +75,14 @@ impl VmVarPool {
      *
      * ret: Some(&obj) if success, None for failed
      */
-    pub fn var_get(&self, name: &String) -> Result<ObjectRc> {
+    pub fn var_get(&self, name: &SharedStr) -> Result<ObjectRc> {
         match self.pool.get(name) {
             Some(obj) => Ok(obj.clone()),
             None => Err(dbg_format!("cannot find object named: {}", name)),
         }
     }
 
-    pub fn var_exist(&self, name: &String) -> bool {
+    pub fn var_exist(&self, name: &SharedStr) -> bool {
         self.pool.contains_key(name)
     }
 

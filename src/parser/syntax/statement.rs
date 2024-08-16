@@ -1,4 +1,4 @@
-use crate::dbg_format;
+use crate::{dbg_format, parser::types::common::SharedStr};
 
 use super::{expression::Expr, token::Token};
 
@@ -13,7 +13,7 @@ pub enum Stmt{
     If(Expr, Box<Stmt>, Option<Box<Stmt>>),
     While(Expr, Box<Stmt>),
     For(Option<Box<Stmt>>, Option<Expr>, Option<Expr>, Box<Stmt>),
-    FunDecl(String, Vec<String>, Box<Stmt>),
+    FunDecl(SharedStr, Vec<SharedStr>, Box<Stmt>),
 }
 
 impl Clone for Stmt {

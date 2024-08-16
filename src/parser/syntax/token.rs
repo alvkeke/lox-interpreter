@@ -1,5 +1,5 @@
 
-use crate::{dbg_format, parser::types::number::Number};
+use crate::{dbg_format, parser::types::{common::{shared_str_from, Crc, SharedStr}, number::Number}};
 
 #[derive(Debug)]
 pub enum Token {
@@ -26,8 +26,8 @@ pub enum Token {
     LessEqual,
 
     // Literals.
-    Identifier(String),
-    String(String),
+    Identifier(SharedStr),
+    String(SharedStr),
     Number(Number),
 
     // Keywords.
@@ -49,6 +49,12 @@ pub enum Token {
     While,
 
     EOF
+}
+
+impl Token {
+    pub fn new_string(s: String) -> Self {
+        Self::String(shared_str_from(s))
+    }
 }
 
 impl Clone for Token {
@@ -167,20 +173,20 @@ pub fn scan_from_string(line: &String, list: &mut Vec<Token>) -> Result<(), Stri
         }
 
         if !buf.is_empty() {
-            let label_new = buf.clone();
+            let label_new: Crc<str> = shared_str_from(buf.clone());
             list.push(match parse_type {
                 ParseType::Number => {
                     if label_new.ends_with('.') {
                         return Err(dbg_format!("wrong number string get: {}", label_new));
                     }
-                    match Number::from(label_new.as_str()) {
+                    match Number::from(label_new.as_ref()) {
                         Ok(num) => Token::Number(num),
                         Err(ex) => return Err(ex),
                     }
                 },
                 ParseType::Identifier => {
                     // check keywords before treat it as an identifier
-                    match label_new.as_str() {
+                    match label_new.as_ref() {
                         "and" => Token::And,
                         "class" => Token::Class,
                         "else" => Token::Else,
@@ -210,7 +216,7 @@ pub fn scan_from_string(line: &String, list: &mut Vec<Token>) -> Result<(), Stri
             // None is not avaiable
             ('"', Some(_)) => {
                 read_to_close(ch, &mut line_itr, buf)?;
-                list.push(Token::String(buf.clone()));
+                list.push(Token::new_string(buf.clone()));
                 buf.clear();
             },
             ('(', _) => list.push(Token::LeftParen),
