@@ -1,6 +1,11 @@
-use crate::{dbg_format, parser::types::object::Object};
 
 use super::var_pool::VmVarPool;
+use crate::{dbg_format,
+    parser::types::{
+        object::ObjectRc,
+        common::Result,
+    },
+};
 
 
 #[derive(Debug)]
@@ -39,7 +44,7 @@ impl VmStack {
         self.scopes.get_mut(0).unwrap()
     }
 
-    pub fn scope_of_var(&self, name: &String) -> Result<&VmVarPool, String> {
+    pub fn scope_of_var(&self, name: &String) -> Result<&VmVarPool> {
         let mut iter = self.scopes.iter();
         while let Some(scope) = iter.next() {
             if scope.var_exist(name) {
@@ -49,7 +54,7 @@ impl VmStack {
         Err(dbg_format!("cannot find object named: {}", name))
     }
 
-    pub fn scope_of_var_mut(&mut self, name: &String) -> Result<&mut VmVarPool, String> {
+    pub fn scope_of_var_mut(&mut self, name: &String) -> Result<&mut VmVarPool> {
         let mut iter = self.scopes.iter_mut();
         while let Some(scope) = iter.next() {
             if scope.var_exist(name) {
@@ -66,7 +71,7 @@ impl VmStack {
      * name: target variable name
      * obj: value
      */
-    pub fn var_add(&mut self, name: String, obj: Object) {
+    pub fn var_add(&mut self, name: String, obj: ObjectRc) {
         self.scope_current().var_add(name, obj)
     }
 
@@ -75,7 +80,7 @@ impl VmStack {
      *
      * name: name of the variable
      */
-    pub fn var_set(&mut self, name: String, obj: Object) -> Result<Object, String> {
+    pub fn var_set(&mut self, name: String, obj: ObjectRc) -> Result<ObjectRc> {
         self.scope_of_var_mut(&name)?.var_set(name, obj)
     }
 
@@ -85,7 +90,7 @@ impl VmStack {
      * name: name of the variable
      */
     #[allow(dead_code)]
-    pub fn var_pop(&mut self, name: &String) -> Result<Object, String> {
+    pub fn var_pop(&mut self, name: &String) -> Result<ObjectRc> {
         self.scope_of_var_mut(name)?.var_pop(name)
     }
 
@@ -96,12 +101,8 @@ impl VmStack {
      *
      * ret: Some(&obj) if success, None for failed
      */
-    pub fn var_get(&self, name: &String) -> Result<&Object, String> {
-        self.scope_of_var(name)?.var_get(&name)
-    }
-
-    pub fn var_get_mut(&mut self, name: &String) -> Result<&mut Object, String> {
-        self.scope_of_var_mut(name)?.var_get_mut(&name)
+    pub fn var_get(&self, name: &String) -> Result<ObjectRc> {
+        self.scope_of_var(name)?.var_get(name)
     }
 
     pub fn var_exist(&self, name: &String) -> bool {
