@@ -1,5 +1,6 @@
 
-use std::{fmt::Display, sync::Arc};
+#[allow(unused_imports)]
+use std::{fmt::Display, rc::Rc, sync::Arc};
 
 use crate::{dbg_format, parser::syntax::statement::Stmt};
 
@@ -15,7 +16,7 @@ pub enum Object {
     Function(Vec<String>, Stmt),
 }
 
-pub type Orc<T> = Arc<T>;
+pub type Orc<T> = Rc<T>;
 pub type ObjectRc = Orc<Object>;
 
 impl Clone for Object {
