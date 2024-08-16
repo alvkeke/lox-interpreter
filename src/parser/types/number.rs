@@ -10,9 +10,10 @@ use std::{cmp::Ordering, fmt::Display, ops::{self, Neg}};
 use Number::{*};
 
 use crate::dbg_format;
+use crate::parser::types::common::Result;
 
 impl Number {
-    pub fn from(str: &str) -> Result<Number, String> {
+    pub fn from(str: &str) -> Result<Number> {
         if str.contains('.') {
             match str.parse::<f64>() {
                 Err(ex) => Err(dbg_format!("{}", ex)),
@@ -57,28 +58,28 @@ impl Neg for Number {
 }
 
 impl ops::Add<Number> for Number {
-    type Output = Result<Number, String>;
+    type Output = Result<Number>;
     fn add(self, rhs: Number) -> Self::Output {
         self.add_ref(&rhs)
     }
 }
 
 impl ops::Sub<Number> for Number {
-    type Output = Result<Number, String>;
+    type Output = Result<Number>;
     fn sub(self, rhs: Number) -> Self::Output {
         self.sub_ref(&rhs)
     }
 }
 
 impl ops::Mul<Number> for Number {
-    type Output = Result<Number, String>;
+    type Output = Result<Number>;
     fn mul(self, rhs: Number) -> Self::Output {
         self.mul_ref(&rhs)
     }
 }
 
 impl ops::Div<Number> for Number {
-    type Output = Result<Number, String>;
+    type Output = Result<Number>;
     fn div(self, rhs: Number) -> Self::Output {
         self.div_ref(&rhs)
     }
@@ -94,7 +95,7 @@ impl Number {
         }
     }
 
-    pub fn add_ref(&self, rhs: &Self) -> Result<Number, String> {
+    pub fn add_ref(&self, rhs: &Self) -> Result<Number> {
         match (self, rhs) {
             (Integer(ii), Integer(jj)) => {
                 Ok(Integer(*ii + *jj))
@@ -111,7 +112,7 @@ impl Number {
         }
     }
 
-    pub fn sub_ref(&self, rhs: &Self) -> Result<Number, String> {
+    pub fn sub_ref(&self, rhs: &Self) -> Result<Number> {
         match (self, rhs) {
             (Integer(ii), Integer(jj)) => {
                 Ok(Integer(*ii - *jj))
@@ -127,7 +128,7 @@ impl Number {
             }
         }
     }
-    pub fn mul_ref(&self, rhs: &Self) -> Result<Number, String> {
+    pub fn mul_ref(&self, rhs: &Self) -> Result<Number> {
         match (self, rhs) {
             (Integer(ii), Integer(jj)) => {
                 Ok(Integer(*ii * *jj))
@@ -144,7 +145,7 @@ impl Number {
         }
     }
 
-    pub fn div_ref(&self, rhs: &Self) -> Result<Number, String> {
+    pub fn div_ref(&self, rhs: &Self) -> Result<Number> {
         if rhs.is_zero() {
             return Err(dbg_format!("cannot divide by Zero: {} / {}", self, rhs));
         }

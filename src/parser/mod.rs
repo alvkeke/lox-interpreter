@@ -5,49 +5,9 @@ use std::io::Write;
 use syntax::statement::Stmt;
 use syntax::token::Token;
 use vm::vm::LoxVM;
+use types::common::Result;
 
 use crate::dbg_format;
-
-#[macro_export]
-macro_rules! dbg_format {
-    ($fmt:expr) => {{
-        format!(
-            "[{}:{}] {}",
-            file!(),
-            line!(),
-            $fmt
-        )
-    }};
-    ($fmt:expr, $($arg:tt)*) => {{
-        format!(
-            "[{}:{}] {}",
-            file!(),
-            line!(),
-            format!($fmt, $($arg)*)
-        )
-    }};
-}
-
-#[macro_export]
-macro_rules! dbg_println {
-    ($fmt:expr) => {{
-        println!(
-            "[{}:{}] {}",
-            file!(),
-            line!(),
-            $fmt
-        )
-    }};
-    ($fmt:expr, $($arg:tt)*) => {{
-        println!(
-            "[{}:{}] {}",
-            file!(),
-            line!(),
-            println!($fmt, $($arg)*)
-        )
-    }};
-}
-
 
 mod syntax {
     pub mod token;
@@ -96,28 +56,28 @@ impl LoxParser {
 impl LoxParser {
 
     #[allow(dead_code)]
-    pub fn parse_token_clear(&mut self, code: &String) -> Result<(), String> {
+    pub fn parse_token_clear(&mut self, code: &String) -> Result<()> {
         self.tokens.clear();
         syntax::token::scan_from_string(code, &mut self.tokens)
     }
 
     #[allow(dead_code)]
-    pub fn parse_token_append(&mut self, code: &String) -> Result<(), String> {
+    pub fn parse_token_append(&mut self, code: &String) -> Result<()> {
         syntax::token::scan_from_string(code, &mut self.tokens)
     }
 
-    pub fn parse_stmt(&mut self) -> Result<Stmt, String> {
+    pub fn parse_stmt(&mut self) -> Result<Stmt> {
         let (stmt, used) = Stmt::stmt(&self.tokens, 0)?;
         self.tokens.drain(0..used);
         Ok(stmt)
     }
 
-    pub fn exec_stmt(&mut self, stmt: Stmt) -> Result<(), String> {
+    pub fn exec_stmt(&mut self, stmt: Stmt) -> Result<()> {
         self.vm.exec(&stmt)?;
         Ok(())
     }
 
-    pub fn exec_stmt_all_available(&mut self) -> Result<(), String> {
+    pub fn exec_stmt_all_available(&mut self) -> Result<()> {
         while !self.tokens.is_empty() {
             let stmt = self.parse_stmt()?;
             self.exec_stmt(stmt)?;
@@ -138,13 +98,13 @@ impl LoxParser {
         }
     }
 
-    pub fn exec_line(&mut self, line: &String) -> Result<(), String>{
+    pub fn exec_line(&mut self, line: &String) -> Result<()>{
         self.parse_token_clear(line)?;
         self.exec_stmt_all_available()
     }
 
     #[allow(dead_code)]
-    pub fn repl(&mut self) -> Result<(), String> {
+    pub fn repl(&mut self) -> Result<()> {
         let stdin = io::stdin();
 
         let mut line = String::new();

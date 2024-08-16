@@ -1,5 +1,5 @@
 
-use crate::{dbg_format, parser::types::{common::{shared_str_from, Crc, SharedStr}, number::Number}};
+use crate::{dbg_format, parser::types::{common::{shared_str_from, Crc, SharedStr, Result}, number::Number}};
 
 #[derive(Debug)]
 pub enum Token {
@@ -127,7 +127,7 @@ enum ParseType {
     Number,
 }
 
-fn read_to_close(close_ch: char, str: &mut impl Iterator<Item = char>, out_buf: &mut String) -> Result<(), String> {
+fn read_to_close(close_ch: char, str: &mut impl Iterator<Item = char>, out_buf: &mut String) -> Result<()> {
     while let Some(ch) = str.next() {
         if ch == close_ch {
             return Ok(());
@@ -138,7 +138,7 @@ fn read_to_close(close_ch: char, str: &mut impl Iterator<Item = char>, out_buf: 
     return Err(dbg_format!("end without close mark: {}", close_ch));
 }
 
-pub fn scan_from_string(line: &String, list: &mut Vec<Token>) -> Result<(), String> {
+pub fn scan_from_string(line: &String, list: &mut Vec<Token>) -> Result<()> {
 
     let mut parse_type = ParseType::Identifier;
     let mut string_buffer: String = String::new();
@@ -164,7 +164,7 @@ pub fn scan_from_string(line: &String, list: &mut Vec<Token>) -> Result<(), Stri
                 },
                 _ => {
                     if let ParseType::Number = parse_type {
-                        return Err(String::from("got unexpected char during parsing the number"));
+                        return Err(dbg_format!("got unexpected char during parsing the number"));
                     }
                     buf.push(ch);
                 },

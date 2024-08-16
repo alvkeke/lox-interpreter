@@ -1,4 +1,4 @@
-use crate::{dbg_format, parser::types::common::SharedStr};
+use crate::{dbg_format, parser::types::common::SharedStr, parser::types::common::Result};
 
 use super::{expression::Expr, token::Token};
 
@@ -33,7 +33,7 @@ impl Clone for Stmt {
 
 impl Stmt {
 
-    pub fn stmt(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn stmt(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         match tks.get(start) {
             Some(Token::Print) => {
                 let (stmt, used) = Self::print(tks, start)?;
@@ -53,7 +53,7 @@ impl Stmt {
         }
     }
 
-    pub fn fun_decl(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn fun_decl(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         if !matches!(tks.get(start), Some(Token::Fun)) {
             return Err(dbg_format!("not start with Token: fun"));
         }
@@ -98,7 +98,7 @@ impl Stmt {
         Ok((Stmt::FunDecl(fn_name, args, Box::new(fn_body)), ret_adv))
     }
 
-    pub fn ctrl_for(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn ctrl_for(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         if !matches!(tks.get(start), Some(Token::For)) {
             return Err(dbg_format!("not start with Token: while"));
         }
@@ -156,7 +156,7 @@ impl Stmt {
         Ok((Stmt::For(opt_start, opt_cont, opt_every, Box::new(stmt_body)), ret_adv))
     }
 
-    pub fn ctrl_while(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn ctrl_while(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         if !matches!(tks.get(start), Some(Token::While)) {
             return Err(dbg_format!("not start with Token: while"));
         }
@@ -179,7 +179,7 @@ impl Stmt {
         Ok((Stmt::While(expr_cont, Box::new(stmt_true)), ret_adv))
     }
 
-    pub fn ctrl_if(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn ctrl_if(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         if !matches!(tks.get(start), Some(Token::If)) {
             return Err(dbg_format!("not start with Token: if"));
         }
@@ -210,7 +210,7 @@ impl Stmt {
 
     }
 
-    pub fn block(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn block(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         if !matches!(tks.get(start), Some(Token::LeftBrace)) {
             return Err(dbg_format!("not start with Token: {"));
         }
@@ -230,7 +230,7 @@ impl Stmt {
         Ok((Self::Block(stmt_arr), ret_adv))
     }
 
-    pub fn decl(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn decl(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
 
         if !matches!(tks.get(start), Some(Token::Var)) {
             return Err(dbg_format!("not start with Token: Var"));
@@ -267,7 +267,7 @@ impl Stmt {
 
     }
 
-    pub fn expr(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn expr(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         let (expr, adv) = Expr::expression(tks, start)?;
 
         match tks.get(start + adv) {
@@ -276,7 +276,7 @@ impl Stmt {
         }
     }
 
-    pub fn print(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn print(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         if !matches!(tks.get(start), Some(Token::Print)) {
             return Err(dbg_format!("not start with Token: Print"));
         }

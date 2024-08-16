@@ -1,4 +1,4 @@
-use crate::{dbg_format, parser::{syntax::token::Token, types::common::SharedStr}};
+use crate::{dbg_format, parser::{syntax::token::Token, types::common::SharedStr, types::common::Result}};
 
 
 #[derive(Debug)]
@@ -26,7 +26,7 @@ impl Clone for Expr {
 
 // parsing methods
 impl Expr {
-    pub fn expression(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn expression(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         if let Ok(ret) = Self::assign(tks, start) {
             Ok(ret)
         } else {
@@ -34,7 +34,7 @@ impl Expr {
         }
     }
 
-    pub fn assign(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn assign(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         let mut ret_adv = 0;
         let idt = tks.get(start+ret_adv);
         if !matches!(idt, Some(Token::Identifier(_))) {
@@ -66,9 +66,9 @@ impl Expr {
 
     fn binary_common(
         tks: &Vec<Token>, start: usize,
-        next_fn: fn(&Vec<Token>, usize) -> Result<(Self, usize), String>,
+        next_fn: fn(&Vec<Token>, usize) -> Result<(Self, usize)>,
         ops: &[Token]
-    ) -> Result<(Self, usize), String> {
+    ) -> Result<(Self, usize)> {
         let (mut expr, adv) = next_fn(tks, start)?;
         let mut ret_adv = adv;
 
@@ -90,35 +90,35 @@ impl Expr {
     }
 
     const LOGIC_OR_OPS: [Token; 1] = [Token::Or];
-    pub fn logic_or(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn logic_or(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         Self::binary_common(tks, start, Self::logic_and, &Self::LOGIC_OR_OPS)
     }
 
     const LOGIC_AND_OPS: [Token; 1] = [Token::And];
-    pub fn logic_and(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn logic_and(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         Self::binary_common(tks, start, Self::equality, &Self::LOGIC_AND_OPS)
     }
 
     const EQUALITY_OPS: [Token; 2] = [Token::EqualEqual, Token::BangEqual];
-    pub fn equality(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn equality(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         Self::binary_common(tks, start, Self::comparison, &Self::EQUALITY_OPS)
     }
 
     const COMPARISON_OPS: [Token; 4] = [Token::Greater, Token::GreaterEqual, Token::Less, Token::LessEqual];
-    pub fn comparison(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn comparison(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         Self::binary_common(tks, start, Self::term, &Self::COMPARISON_OPS)
     }
     const TERM_OPS: [Token; 2] = [Token::Minus, Token::Plus];
-    pub fn term(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn term(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         Self::binary_common(tks, start, Self::factor, &Self::TERM_OPS)
     }
 
     const FACTOR_OPS: [Token; 2] = [Token::Slash, Token::Star];
-    pub fn factor(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn factor(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         Self::binary_common(tks, start, Self::unary, &Self::FACTOR_OPS)
     }
 
-    pub fn unary(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn unary(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
 
         let tk_start = tks.get(start);
         if let tk_op@ Some(Token::Bang | Token::Minus) = tk_start {
@@ -135,7 +135,7 @@ impl Expr {
         Self::primary(tks, start)
     }
 
-    fn fn_args_parse(tks: &Vec<Token>, start: usize) -> Result<(Vec<Box<Self>>, usize), String> {
+    fn fn_args_parse(tks: &Vec<Token>, start: usize) -> Result<(Vec<Box<Self>>, usize)> {
         let mut ret_adv = 0;
         match tks.get(start+ret_adv) {
             Some(Token::LeftParen) => ret_adv += 1,
@@ -166,7 +166,7 @@ impl Expr {
         Ok((args, ret_adv))
     }
 
-    pub fn fn_call(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn fn_call(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         let mut ret_adv = 0;
         let fn_name;
         match tks.get(start) {
@@ -183,7 +183,7 @@ impl Expr {
         Ok((Expr::FnCall(fn_name, args), ret_adv))
     }
 
-    pub fn primary(tks: &Vec<Token>, start: usize) -> Result<(Self, usize), String> {
+    pub fn primary(tks: &Vec<Token>, start: usize) -> Result<(Self, usize)> {
         match tks.get(start) {
             tk @ Some(Token::False | Token::True | Token::Nil) => Ok((Expr::Literal(tk.unwrap().clone()), 1)),
             tk @ Some(Token::String(_) | Token::Number(_)) => Ok((Expr::Literal(tk.unwrap().clone()), 1)),
