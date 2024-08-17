@@ -10,7 +10,7 @@ use std::{cmp::Ordering, fmt::Display, ops::{self, Neg}};
 use Number::{*};
 
 use crate::dbg_format;
-use crate::parser::types::common::Result;
+use crate::types::common::Result;
 
 impl Number {
     pub fn from(str: &str) -> Result<Number> {

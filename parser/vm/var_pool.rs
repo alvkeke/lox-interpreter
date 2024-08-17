@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     dbg_format,
-    parser::types::{
+    types::{
         common::{Result, SharedStr}, object::ObjectRc
     },
 };

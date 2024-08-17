@@ -7,7 +7,7 @@ use syntax::token::Token;
 use vm::vm::LoxVM;
 use types::common::Result;
 
-use crate::dbg_format;
+// use crate::dbg_format;
 
 mod syntax {
     pub mod token;

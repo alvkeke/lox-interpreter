@@ -1,9 +1,8 @@
 
-use super::stack::VmStack;
-use super::console::LoxPrinter;
+
 use crate::{
     dbg_format,
-    parser::{
+    {
         syntax::{
             expression::Expr,
             statement::Stmt,
@@ -16,6 +15,8 @@ use crate::{
             },
             common::{shared_str_from, Result, SharedStr},
         },
+        vm::stack::VmStack,
+        vm::console::LoxPrinter,
     },
 };
 

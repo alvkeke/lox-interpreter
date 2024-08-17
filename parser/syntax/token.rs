@@ -1,5 +1,5 @@
 
-use crate::{dbg_format, parser::types::{common::{shared_str_from, Crc, SharedStr, Result}, number::Number}};
+use crate::{dbg_format, types::{common::{shared_str_from, Crc, SharedStr, Result}, number::Number}};
 
 #[derive(Debug)]
 pub enum Token {

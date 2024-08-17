@@ -1,7 +1,16 @@
 [package]
-name = "lox_parser"
+name = "lox-intepreter"
 version = "0.1.0"
 edition = "2021"
+
+
+[lib]
+name = "lox_lib"
+path = "parser/parser.rs"
+
+[[bin]]
+name = "lox_repl"
+path = "src/main.rs"
 
 [dependencies]
 regex = "1"

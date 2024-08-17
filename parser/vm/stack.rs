@@ -1,7 +1,7 @@
 
 use super::var_pool::VmVarPool;
 use crate::{dbg_format,
-    parser::types::{
+    types::{
         common::{Result, SharedStr}, object::ObjectRc
     },
 };

@@ -1,7 +1,7 @@
 
 use std::fmt::Display;
 
-use crate::{dbg_format, parser::syntax::statement::Stmt};
+use crate::{dbg_format, syntax::statement::Stmt};
 
 use super::{common::{Crc, Result, SharedStr, shared_str_from}, number::Number};
 
