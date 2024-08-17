@@ -46,6 +46,7 @@ impl LoxParser {
         lox
     }
 
+    #[allow(dead_code)]
     pub fn clear (&mut self) {
         self.vm.clear();
         self.tokens.clear();
