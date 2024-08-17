@@ -24,6 +24,7 @@ mod vm {
     pub mod stack;
     pub mod var_pool;
     pub mod vm;
+    pub mod console;
 }
 
 
@@ -49,6 +50,7 @@ impl LoxParser {
     #[allow(dead_code)]
     pub fn clear (&mut self) {
         self.vm.clear();
+        self.vm.printer.clear();
         self.tokens.clear();
     }
 }
@@ -99,13 +101,17 @@ impl LoxParser {
         }
     }
 
+    pub fn exec_code(&mut self, code: &String) {
+        let _ = self.exec_line(code);
+    }
+
     pub fn exec_line(&mut self, line: &String) -> Result<()>{
         self.parse_token_clear(line)?;
         self.exec_stmt_all_available()
     }
 
     #[allow(dead_code)]
-    pub fn repl(&mut self) -> Result<()> {
+    pub fn repl(&mut self) {
         let stdin = io::stdin();
 
         let mut line = String::new();
@@ -113,14 +119,14 @@ impl LoxParser {
             self.prompt_disp();
             line.clear();
             if let Err(msg) = stdin.read_line(&mut line) {
-                return Err(dbg_format!("{}", msg));
+                self.vm.printer.println(&dbg_format!("{}", msg));
+                return;
             }
             if Self::is_break_cmd(&line) {
-                return Ok(());
+                return;
             }
-            match self.exec_line(&line) {
-                Err(msg) => eprintln!("{}", msg),
-                _=>{},
+            if let Err(msg) = self.exec_line(&line) {
+                self.vm.printer.println(&format!("{}", msg))
             }
         }
     }
@@ -143,5 +149,21 @@ impl LoxParser {
         print!("{}", self.prompt);
         io::stdout().flush().unwrap();
     }
+
+    #[allow(dead_code)]
+    pub fn console_disable(&mut self) {
+        self.vm.printer.auto_to_console(false);
+    }
+
+    #[allow(dead_code)]
+    pub fn console_enable(&mut self) {
+        self.vm.printer.auto_to_console(true);
+    }
+
+    #[allow(dead_code)]
+    pub fn console_take(&mut self) -> String {
+        self.vm.printer.take()
+    }
+
 }
 

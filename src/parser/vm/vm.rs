@@ -1,5 +1,6 @@
 
 use super::stack::VmStack;
+use super::console::LoxPrinter;
 use crate::{
     dbg_format,
     parser::{
@@ -22,6 +23,7 @@ use crate::{
 pub struct LoxVM {
     global: VmStack,
     stacks: Vec<VmStack>,
+    pub printer: LoxPrinter,
 }
 
 impl LoxVM {
@@ -29,6 +31,7 @@ impl LoxVM {
         Self {
             global: VmStack::new(shared_str_from("(global)".to_string())),
             stacks: Vec::new(),
+            printer: LoxPrinter::new(),
         }
     }
 }
@@ -106,7 +109,8 @@ impl LoxVM {
                 self.eval(expr)?;
             },
             Stmt::Print(expr) => {
-                println!("{}", self.eval(expr)?);
+                let obj = self.eval(expr)?;
+                self.printer.print(&format!("{}\n", obj));
             },
             Stmt::Block(stmts) => {
                 self.block_enter();

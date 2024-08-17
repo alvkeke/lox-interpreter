@@ -7,25 +7,28 @@ fn main() {
 
     let mut lox = LoxParser::new();
     test(&mut lox);
-    // if let Err(msg) = lox.repl() {
-    //     eprintln!("failed to read line: {}", msg);
-    // }
+    // lox.repl();
 
 }
 
 
 
-fn test(lox: &mut LoxParser) {
-    println!("{:#?}", lox.exec_line(&CODE_CALC.to_string()));
-    println!("{:#?}", lox.exec_line(&CODE_SCOPE.to_string()));
-    println!("{:#?}", lox.exec_line(&CODE_IF.to_string()));
-    println!("{:#?}", lox.exec_line(&CODE_WHILE.to_string()));
-    println!("{:#?}", lox.exec_line(&CODE_FOR.to_string()));
-    println!("{:#?}", lox.exec_line(&CODE_FUNCTION.to_string()));
+fn test(lox: &mut LoxParser)  {
 
-    dbg!(&lox);
+    lox.console_disable();
+    lox.exec_code(&CODE_CALC.to_string());
+    lox.exec_code(&CODE_SCOPE.to_string());
+    lox.exec_code(&CODE_IF.to_string());
+    lox.exec_code(&CODE_WHILE.to_string());
+    lox.exec_code(&CODE_FOR.to_string());
+    lox.exec_code(&CODE_FUNCTION.to_string());
+
+    println!("{}", lox.console_take());
+    lox.console_enable();
+
+    // dbg!(&lox);
     lox.clear();
-    dbg!(lox);
+    // dbg!(lox);
 }
 
 const CODE_FUNCTION: &str = "
