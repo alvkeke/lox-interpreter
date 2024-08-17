@@ -47,6 +47,16 @@ impl LoxParser {
         lox
     }
 
+    pub fn new_test() -> Self {
+        let mut lox = LoxParser{
+            prompt: String::from(">> "),
+            vm: LoxVM::new(),
+            tokens: Vec::new()
+        };
+        lox.console_disable();
+        lox
+    }
+
     #[allow(dead_code)]
     pub fn clear (&mut self) {
         self.vm.clear();
@@ -110,7 +120,7 @@ impl LoxParser {
         self.exec_stmt_all_available()
     }
 
-    #[allow(dead_code)]
+    // #[allow(dead_code)]
     pub fn repl(&mut self) {
         let stdin = io::stdin();
 

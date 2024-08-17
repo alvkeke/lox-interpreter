@@ -3,33 +3,46 @@ extern crate lox_lib;
 
 use lox_lib::LoxParser;
 
-
-
 #[test]
-fn parser_test()  {
-
-    let mut lox = LoxParser::new();
-
-    lox.console_disable();
+fn test_calc() {
+    let mut lox = LoxParser::new_test();
     lox.exec_code(&CODE_CALC.to_string());
     assert_eq!(lox.console_take(), "137\n");
+}
 
+#[test]
+fn test_scope() {
+    let mut lox = LoxParser::new_test();
     lox.exec_code(&CODE_SCOPE.to_string());
     assert_eq!(lox.console_take(), "n1\nn2\nn1\ninner a\nouter b\nglobal c\nouter a\nouter b\nglobal c\nglobal a\nglobal b\nglobal c\n");
+}
 
+#[test]
+fn test_if() {
+    let mut lox = LoxParser::new_test();
     lox.exec_code(&CODE_IF.to_string());
     assert_eq!(lox.console_take(), "1\n2\n3\n123\n111\n");
+}
 
+#[test]
+fn test_while() {
+    let mut lox = LoxParser::new_test();
     lox.exec_code(&CODE_WHILE.to_string());
     assert_eq!(lox.console_take(), "0\n1\n2\n3\n4\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n");
+}
 
+#[test]
+fn test_for() {
+    let mut lox = LoxParser::new_test();
     lox.exec_code(&CODE_FOR.to_string());
     assert_eq!(lox.console_take(), "0\n1\n1\n2\n3\n5\n8\n13\n21\n34\n55\n89\n144\n233\n377\n610\n987\n1597\n2584\n4181\n6765\n=========================\n0\n1\n1\n2\n3\n5\n8\n13\n21\n34\n55\n89\n144\n233\n377\n610\n987\n1597\n2584\n4181\n6765\n=========================\n0\n1\n1\n2\n3\n5\n8\n13\n21\n34\n55\n89\n144\n233\n377\n610\n987\n1597\n2584\n4181\n6765\n");
+}
 
+#[test]
+fn test_function() {
+    let mut lox = LoxParser::new_test();
     lox.exec_code(&CODE_FUNCTION.to_string());
     assert_eq!(lox.console_take(), "entered fn1\n1\nentered fn2\n1\nentered fn3\n1\n1\nentered fn4\n1\n2\n3\n4\nentered fn4\n5\n6\n7\n8\n9\nentered fn4\n10\n11\n12\n13\n14\nentered outside\nentered inside\nentered inside\n0\nentered inside\n0\n1\n");
-
-    lox.console_enable();
 }
 
 const CODE_FUNCTION: &str = "
