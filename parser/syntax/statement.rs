@@ -1,4 +1,4 @@
-use crate::{dbg_format, types::common::SharedStr, types::common::Result};
+use crate::{dbg_format, types::{common::Result, shared_str::SharedStr}};
 
 use super::{expression::Expr, token::Token};
 

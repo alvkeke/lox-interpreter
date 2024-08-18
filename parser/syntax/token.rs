@@ -1,5 +1,5 @@
 
-use crate::{dbg_format, types::{common::{shared_str_from, Crc, SharedStr, Result}, number::Number}};
+use crate::{dbg_format, types::{common::{Crc, Result}, number::Number, shared_str::{SharedStr, SharedStrExt}}};
 
 #[derive(Debug)]
 pub enum Token {
@@ -53,7 +53,7 @@ pub enum Token {
 
 impl Token {
     pub fn new_string(s: String) -> Self {
-        Self::String(shared_str_from(s))
+        Self::String(s.to_share())
     }
 }
 
@@ -173,7 +173,7 @@ pub fn scan_from_string(line: &str, list: &mut Vec<Token>) -> Result<()> {
         }
 
         if !buf.is_empty() {
-            let label_new: Crc<str> = shared_str_from(buf.clone());
+            let label_new: Crc<str> = buf.clone().to_share();
             list.push(match parse_type {
                 ParseType::Number => {
                     if label_new.ends_with('.') {

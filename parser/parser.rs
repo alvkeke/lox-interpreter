@@ -18,6 +18,7 @@ mod types {
     pub mod common;
     pub mod object;
     pub mod number;
+    pub mod shared_str;
 }
 
 mod vm {

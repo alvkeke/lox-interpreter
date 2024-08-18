@@ -3,7 +3,7 @@ use std::fmt::Display;
 
 use crate::{dbg_format, syntax::statement::Stmt};
 
-use super::{common::{Crc, Result, SharedStr, shared_str_from}, number::Number};
+use super::{common::{Crc, Result}, number::Number, shared_str::{SharedStr, SharedStrExt}};
 
 
 #[derive(Debug)]
@@ -17,7 +17,7 @@ pub enum Object {
 
 impl Object {
     pub fn new_string(s: String) -> Self {
-        Self::String(shared_str_from(s))
+        Self::String(s.to_share())
     }
 }
 

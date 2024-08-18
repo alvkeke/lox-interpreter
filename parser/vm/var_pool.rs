@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::{
     dbg_format,
     types::{
-        common::{Result, SharedStr}, object::ObjectRc
+        common::Result, object::ObjectRc, shared_str::SharedStr
     },
 };
 

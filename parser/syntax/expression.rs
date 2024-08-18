@@ -1,4 +1,4 @@
-use crate::{dbg_format, syntax::token::Token, types::common::SharedStr, types::common::Result};
+use crate::{dbg_format, syntax::token::Token, types::{common::Result, shared_str::SharedStr}};
 
 
 #[derive(Debug)]

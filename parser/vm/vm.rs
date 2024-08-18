@@ -2,22 +2,20 @@
 
 use crate::{
     dbg_format,
-    {
-        syntax::{
+    syntax::{
             expression::Expr,
             statement::Stmt,
             token::Token
-        },
-        types::{
-            object::{
+        }, types::{
+            common::Result, object::{
                 Object,
                 ObjectRc,
             },
-            common::{shared_str_from, Result, SharedStr},
-        },
-        vm::stack::VmStack,
-        vm::console::LoxPrinter,
-    },
+            shared_str::{
+                SharedStr,
+                SharedStrExt
+            },
+        }, vm::{console::LoxPrinter, stack::VmStack},
 };
 
 #[derive(Debug)]
@@ -30,7 +28,7 @@ pub struct LoxVM {
 impl LoxVM {
     pub fn new () -> Self {
         Self {
-            global: VmStack::new(shared_str_from("(global)".to_string())),
+            global: VmStack::new("(global)".to_string().to_share()),
             stacks: Vec::new(),
             printer: LoxPrinter::new(),
         }
