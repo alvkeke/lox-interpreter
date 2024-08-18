@@ -69,13 +69,13 @@ impl LoxParser {
 impl LoxParser {
 
     #[allow(dead_code)]
-    pub fn parse_token_clear(&mut self, code: &String) -> Result<()> {
+    pub fn parse_token_clear(&mut self, code: &str) -> Result<()> {
         self.tokens.clear();
         syntax::token::scan_from_string(code, &mut self.tokens)
     }
 
     #[allow(dead_code)]
-    pub fn parse_token_append(&mut self, code: &String) -> Result<()> {
+    pub fn parse_token_append(&mut self, code: &str) -> Result<()> {
         syntax::token::scan_from_string(code, &mut self.tokens)
     }
 
@@ -103,7 +103,7 @@ impl LoxParser {
 // REPL
 impl LoxParser {
 
-    fn is_break_cmd(cmd: &String) -> bool {
+    fn is_break_cmd(cmd: &str) -> bool {
         if let Ordering::Equal = cmd.trim().cmp(".q") {
             true
         } else {
@@ -111,11 +111,11 @@ impl LoxParser {
         }
     }
 
-    pub fn exec_code(&mut self, code: &String) {
+    pub fn exec_code(&mut self, code: &str) {
         let _ = self.exec_line(code);
     }
 
-    pub fn exec_line(&mut self, line: &String) -> Result<()>{
+    pub fn exec_line(&mut self, line: &str) -> Result<()>{
         self.parse_token_clear(line)?;
         self.exec_stmt_all_available()
     }
